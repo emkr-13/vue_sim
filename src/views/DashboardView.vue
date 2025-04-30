@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import {  onMounted } from 'vue';
 import { useAuthStore } from '@/stores/auth';
 import DashboardLayout from '@/layouts/DashboardLayout.vue';
 

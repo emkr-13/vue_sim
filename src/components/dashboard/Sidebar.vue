@@ -18,6 +18,12 @@ const menuItems = [
     active: true 
   },
   { 
+    name: 'Categories', 
+    icon: '📁', 
+    route: '/categories',
+    active: false 
+  },
+  { 
     name: 'Profile', 
     icon: '👤', 
     route: '/profile',

@@ -23,3 +23,39 @@ export interface UserProfileResponse {
   message: string;
   data: UserProfile;
 }
+
+export interface Category {
+  id: number;
+  name: string;
+  description: string;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+}
+
+export interface Pagination {
+  total_data: string;
+  total_page: number;
+  total_display: number;
+  first_page: boolean;
+  last_page: boolean;
+  prev: number;
+  current: number;
+  next: number;
+  detail: number[];
+}
+
+export interface CategoriesResponse {
+  success: boolean;
+  message: string;
+  data: {
+    data: Category[];
+    pagination: Pagination;
+  };
+}
+
+export interface CategoryDetailResponse {
+  success: boolean;
+  message: string;
+  data: Category[];
+}

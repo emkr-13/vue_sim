@@ -23,11 +23,7 @@ export const useAuthStore = defineStore('auth', () => {
       if (response.success) {
         token.value = response.data.token;
         refreshToken.value = response.data.refreshToken;
-        
-        // Get user profile after successful login
         await fetchUserProfile();
-        
-        // Redirect to dashboard
         router.push('/dashboard');
       } else {
         error.value = response.message || 'Login failed';
@@ -53,41 +49,24 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  async function refreshTokenFn() {
-    if (!refreshToken.value) {
-      throw new Error('No refresh token available');
-    }
-    
+  async function logout() {
     try {
-      const response = await authService.refreshToken(refreshToken.value);
-      
-      if (response.success) {
-        token.value = response.data.token;
-        refreshToken.value = response.data.refreshToken;
-        return true;
-      }
-      return false;
+      await authService.logout();
     } catch (err) {
-      logout();
-      return false;
+      console.error('Error during logout:', err);
+    } finally {
+      token.value = null;
+      refreshToken.value = null;
+      user.value = null;
+      router.push('/login');
     }
-  }
-
-  function logout() {
-    token.value = null;
-    refreshToken.value = null;
-    user.value = null;
-    router.push('/login');
   }
   
   function checkTokenValidity() {
-    // Simple check if token exists, could be extended with JWT expiration checks
     if (!token.value) {
       router.push('/login');
       return;
     }
-    
-    // Fetch user profile to check if token is still valid
     fetchUserProfile();
   }
 
@@ -101,7 +80,6 @@ export const useAuthStore = defineStore('auth', () => {
     login,
     logout,
     fetchUserProfile,
-    refreshToken: refreshTokenFn,
     checkTokenValidity
   };
 }, {

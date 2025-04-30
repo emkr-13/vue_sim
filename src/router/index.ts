@@ -1,10 +1,10 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 
-// Lazy load components for better performance
 const LoginView = () => import('@/views/LoginView.vue');
 const DashboardView = () => import('@/views/DashboardView.vue');
 const ProfileView = () => import('@/views/ProfileView.vue');
+const CategoriesView = () => import('@/views/CategoriesView.vue');
 
 const routes = [
   {
@@ -24,6 +24,12 @@ const routes = [
     meta: { requiresAuth: true }
   },
   {
+    path: '/categories',
+    name: 'categories',
+    component: CategoriesView,
+    meta: { requiresAuth: true }
+  },
+  {
     path: '/profile',
     name: 'profile',
     component: ProfileView,
@@ -40,7 +46,6 @@ const router = createRouter({
   routes
 });
 
-// Navigation guard
 router.beforeEach((to, from, next) => {
   const authStore = useAuthStore();
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth);

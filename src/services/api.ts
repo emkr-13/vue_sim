@@ -11,7 +11,6 @@ const api = axios.create({
   }
 });
 
-// Request interceptor for adding the auth token
 api.interceptors.request.use(
   (config) => {
     const authStore = useAuthStore();
@@ -25,36 +24,15 @@ api.interceptors.request.use(
   }
 );
 
-// Response interceptor for handling token refresh
 api.interceptors.response.use(
   (response) => {
     return response;
   },
   async (error) => {
-    const originalRequest = error.config;
-    
-    // If the error is due to an unauthorized request (401) and we haven't tried to refresh the token yet
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
-      
-      try {
-        const authStore = useAuthStore();
-        await authStore.refreshToken();
-        
-        // Update the Authorization header with the new token
-        originalRequest.headers.Authorization = `Bearer ${authStore.token}`;
-        
-        // Retry the original request with the new token
-        return api(originalRequest);
-      } catch (refreshError) {
-        // If token refresh fails, redirect to login
-        const authStore = useAuthStore();
-        authStore.logout();
-        window.location.href = '/login';
-        return Promise.reject(refreshError);
-      }
+    if (error.response?.status === 401) {
+      const authStore = useAuthStore();
+      authStore.logout();
     }
-    
     return Promise.reject(error);
   }
 );
