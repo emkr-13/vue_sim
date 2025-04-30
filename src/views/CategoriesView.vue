@@ -6,7 +6,10 @@ import type { Category } from '@/types';
 
 const categoriesStore = useCategoriesStore();
 const currentPage = ref(1);
-const itemsPerPage = ref(10);
+const itemsPerPage = ref<1 | 10 | 100 | 1000>(10);
+const searchQuery = ref('');
+const sortBy = ref<'name' | 'createdAt'>('createdAt');
+const sortOrder = ref<'asc' | 'desc'>('desc');
 const selectedCategory = ref<Category | null>(null);
 
 onMounted(() => {
@@ -14,11 +17,38 @@ onMounted(() => {
 });
 
 const loadCategories = async () => {
-  await categoriesStore.fetchCategories(itemsPerPage.value, currentPage.value);
+  await categoriesStore.fetchCategories({
+    page: currentPage.value,
+    limit: itemsPerPage.value,
+    search: searchQuery.value || undefined,
+    sortBy: sortBy.value,
+    sortOrder: sortOrder.value
+  });
+};
+
+const handleSearch = async () => {
+  currentPage.value = 1;
+  await loadCategories();
+};
+
+const handleSort = async (field: 'name' | 'createdAt') => {
+  if (sortBy.value === field) {
+    sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc';
+  } else {
+    sortBy.value = field;
+    sortOrder.value = 'asc';
+  }
+  await loadCategories();
 };
 
 const handlePageChange = async (page: number) => {
   currentPage.value = page;
+  await loadCategories();
+};
+
+const handleLimitChange = async (limit: 1 | 10 | 100 | 1000) => {
+  itemsPerPage.value = limit;
+  currentPage.value = 1;
   await loadCategories();
 };
 
@@ -33,15 +63,53 @@ const viewCategoryDetail = async (id: number) => {
     <div class="categories">
       <div class="page-header">
         <h2 class="page-title">Categories</h2>
+        
+        <div class="filters">
+          <div class="search-box">
+            <input
+              type="text"
+              v-model="searchQuery"
+              placeholder="Search categories..."
+              class="form-control"
+              @keyup.enter="handleSearch"
+            />
+            <button class="btn btn-primary" @click="handleSearch">Search</button>
+          </div>
+          
+          <select 
+            v-model="itemsPerPage" 
+            class="form-control"
+            @change="handleLimitChange(Number(($event.target as HTMLSelectElement).value) as 1 | 10 | 100 | 1000)"
+          >
+            <option :value="1">1 per page</option>
+            <option :value="10">10 per page</option>
+            <option :value="100">100 per page</option>
+            <option :value="1000">1000 per page</option>
+          </select>
+        </div>
       </div>
 
       <div class="categories-list card" v-if="!categoriesStore.loading">
         <table class="categories-table">
           <thead>
             <tr>
-              <th>Name</th>
+              <th>
+                <button class="sort-button" @click="handleSort('name')">
+                  Name
+                  <span v-if="sortBy === 'name'" class="sort-indicator">
+                    {{ sortOrder === 'asc' ? '↑' : '↓' }}
+                  </span>
+                </button>
+              </th>
               <th>Description</th>
-              <th>Created At</th>
+              <th>
+                <button class="sort-button" @click="handleSort('createdAt')">
+                  Created At
+                  <span v-if="sortBy === 'createdAt'" class="sort-indicator">
+                    {{ sortOrder === 'asc' ? '↑' : '↓' }}
+                  </span>
+                </button>
+              </th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -80,7 +148,7 @@ const viewCategoryDetail = async (id: number) => {
       </div>
 
       <!-- Category Detail Modal -->
-      <div class="modal" v-if="selectedCategory">
+      <div class="modal" v-if="selectedCategory" @click.self="selectedCategory = null">
         <div class="modal-content card">
           <h3>Category Details</h3>
           <div class="detail-group">
@@ -113,12 +181,28 @@ const viewCategoryDetail = async (id: number) => {
 
 .page-header {
   margin-bottom: var(--space-4);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-4);
 }
 
 .page-title {
   font-size: 1.5rem;
   font-weight: 600;
   color: var(--color-grey-900);
+}
+
+.filters {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+}
+
+.search-box {
+  display: flex;
+  gap: var(--space-2);
 }
 
 .categories-table {
@@ -137,6 +221,25 @@ const viewCategoryDetail = async (id: number) => {
   font-weight: 600;
   color: var(--color-grey-700);
   background-color: var(--color-grey-100);
+}
+
+.sort-button {
+  background: none;
+  border: none;
+  font-weight: 600;
+  color: var(--color-grey-700);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.sort-button:hover {
+  color: var(--color-primary);
+}
+
+.sort-indicator {
+  color: var(--color-primary);
 }
 
 .btn-sm {
@@ -185,5 +288,24 @@ const viewCategoryDetail = async (id: number) => {
   text-align: center;
   padding: var(--space-4);
   color: var(--color-grey-600);
+}
+
+@media (max-width: 768px) {
+  .page-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .filters {
+    flex-direction: column;
+  }
+  
+  .search-box {
+    width: 100%;
+  }
+  
+  .search-box input {
+    flex: 1;
+  }
 }
 </style>
