@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { useAuthStore } from '@/stores/auth';
+import type { PropType } from 'vue';
 
 const props = defineProps({
   toggleSidebar: {
-    type: Function,
+    type: Function as PropType<(event: MouseEvent) => void>,
     required: true
   },
   sidebarCollapsed: {
@@ -11,7 +12,7 @@ const props = defineProps({
     default: false
   },
   logout: {
-    type: Function,
+    type: Function as PropType<(event: MouseEvent) => void>,
     required: true
   }
 });

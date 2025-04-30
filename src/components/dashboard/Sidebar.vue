@@ -1,5 +1,9 @@
+```vue
 <script setup lang="ts">
+import { ref } from 'vue';
 import { useRouter } from 'vue-router';
+import { useAuthStore } from '@/stores/auth';
+import ProfileModal from '@/components/profile/ProfileModal.vue';
 
 defineProps({
   collapsed: {
@@ -9,6 +13,9 @@ defineProps({
 });
 
 const router = useRouter();
+const authStore = useAuthStore();
+const user = authStore.user;
+const showProfileModal = ref(false);
 
 const menuItems = [
   { 
@@ -22,17 +29,19 @@ const menuItems = [
     icon: '📁', 
     route: '/categories',
     active: false 
-  },
-  { 
-    name: 'Profile', 
-    icon: '👤', 
-    route: '/profile',
-    active: false 
   }
 ];
 
 const navigateTo = (route: string) => {
   router.push(route);
+};
+
+const handleLogout = () => {
+  authStore.logout();
+};
+
+const toggleProfileModal = () => {
+  showProfileModal.value = !showProfileModal.value;
 };
 </script>
 
@@ -57,6 +66,27 @@ const navigateTo = (route: string) => {
         </li>
       </ul>
     </nav>
+
+    <div class="sidebar-profile">
+      <div class="profile-container" @click="toggleProfileModal">
+        <div class="profile-avatar">
+          {{ user?.fullname?.charAt(0).toUpperCase() || 'U' }}
+        </div>
+        <div class="profile-info" v-if="!collapsed">
+          <p class="profile-name">{{ user?.fullname || 'User' }}</p>
+          <p class="profile-email">{{ user?.email || 'No email' }}</p>
+        </div>
+      </div>
+      <button class="logout-button" @click="handleLogout">
+        <span class="menu-icon">🚪</span>
+        <span class="menu-text" v-if="!collapsed">Logout</span>
+      </button>
+    </div>
+
+    <ProfileModal 
+      :show="showProfileModal"
+      @close="showProfileModal = false"
+    />
   </aside>
 </template>
 
@@ -154,6 +184,79 @@ const navigateTo = (route: string) => {
   margin-right: 0;
 }
 
+.sidebar-profile {
+  border-top: 1px solid var(--color-grey-200);
+  padding: var(--space-3);
+  margin-top: auto;
+  background-color: var(--color-grey-100);
+}
+
+.profile-container {
+  display: flex;
+  align-items: center;
+  padding-bottom: var(--space-3);
+  cursor: pointer;
+  transition: opacity var(--transition-speed) ease;
+}
+
+.profile-container:hover {
+  opacity: 0.8;
+}
+
+.profile-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: var(--color-primary);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  margin-right: var(--space-3);
+  flex-shrink: 0;
+}
+
+.profile-info {
+  overflow: hidden;
+}
+
+.profile-name {
+  font-weight: 600;
+  color: var(--color-grey-900);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.profile-email {
+  font-size: 0.875rem;
+  color: var(--color-grey-600);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.logout-button {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  background-color: transparent;
+  border: none;
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  color: var(--color-grey-700);
+  transition: all var(--transition-speed) ease;
+}
+
+.logout-button:hover {
+  background-color: var(--color-grey-200);
+  color: var(--color-error);
+}
+
 @media (max-width: 768px) {
   .sidebar {
     transform: translateX(-100%);
@@ -167,3 +270,4 @@ const navigateTo = (route: string) => {
   }
 }
 </style>
+```

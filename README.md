@@ -7,7 +7,7 @@ This template should help get you started developing with Vue 3 and TypeScript i
 1. Clone this repository
 
 ```bash
-git clone <your-frontend-repo-url>
+git clone https://github.com/emkr-13/vue_sim.git
 cd vue_login
 ```
 
