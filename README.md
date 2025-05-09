@@ -11,6 +11,12 @@ git clone https://github.com/emkr-13/vue_sim.git
 cd vue_login
 ```
 
+2. Setup
+
+```bash
+cp .env.example .env
+```
+
 2. Install dependencies
 
 ```bash
