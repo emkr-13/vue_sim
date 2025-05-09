@@ -1,4 +1,3 @@
-```vue
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
@@ -24,13 +23,38 @@ const menuItems = [
     route: '/dashboard',
     active: true 
   },
-  { 
-    name: 'Categories', 
-    icon: '📁', 
-    route: '/categories',
-    active: false 
+  {
+    name: 'Inventory',
+    icon: '📦',
+    submenu: [
+      {
+        name: 'Categories',
+        icon: '📁',
+        route: '/categories'
+      },
+      {
+        name: 'Stores',
+        icon: '🏪',
+        route: '/stores'
+      }
+    ]
   }
 ];
+
+const expandedMenus = ref<string[]>([]);
+
+const toggleSubmenu = (menuName: string) => {
+  const index = expandedMenus.value.indexOf(menuName);
+  if (index === -1) {
+    expandedMenus.value.push(menuName);
+  } else {
+    expandedMenus.value.splice(index, 1);
+  }
+};
+
+const isSubmenuExpanded = (menuName: string): boolean => {
+  return expandedMenus.value.includes(menuName);
+};
 
 const navigateTo = (route: string) => {
   router.push(route);
@@ -57,12 +81,46 @@ const toggleProfileModal = () => {
         <li 
           v-for="item in menuItems" 
           :key="item.name"
-          class="sidebar-menu-item"
-          :class="{ 'active': $route.path === item.route }"
-          @click="navigateTo(item.route)"
+          :class="{ 
+            'sidebar-menu-item': true,
+            'has-submenu': item.submenu,
+            'active': item.route && $route.path === item.route,
+            'expanded': isSubmenuExpanded(item.name)
+          }"
         >
-          <span class="menu-icon">{{ item.icon }}</span>
-          <span class="menu-text" v-if="!collapsed">{{ item.name }}</span>
+          <div 
+            class="menu-item-content"
+            @click="item.submenu ? toggleSubmenu(item.name) : navigateTo(item.route!)"
+          >
+            <span class="menu-icon">{{ item.icon }}</span>
+            <span class="menu-text" v-if="!collapsed">{{ item.name }}</span>
+            <span 
+              v-if="item.submenu && !collapsed" 
+              class="submenu-indicator"
+            >
+              {{ isSubmenuExpanded(item.name) ? '▼' : '▶' }}
+            </span>
+          </div>
+          
+          <ul 
+            v-if="item.submenu" 
+            class="submenu"
+            :class="{ 
+              'show': isSubmenuExpanded(item.name) && !collapsed,
+              'collapsed': collapsed 
+            }"
+          >
+            <li 
+              v-for="subitem in item.submenu"
+              :key="subitem.name"
+              class="submenu-item"
+              :class="{ 'active': $route.path === subitem.route }"
+              @click="navigateTo(subitem.route)"
+            >
+              <span class="menu-icon">{{ subitem.icon }}</span>
+              <span class="menu-text" v-if="!collapsed">{{ subitem.name }}</span>
+            </li>
+          </ul>
         </li>
       </ul>
     </nav>
@@ -153,19 +211,22 @@ const toggleProfileModal = () => {
 }
 
 .sidebar-menu-item {
-  display: flex;
-  align-items: center;
-  padding: var(--space-3) var(--space-4);
   cursor: pointer;
   transition: background-color var(--transition-speed) ease;
   white-space: nowrap;
 }
 
-.sidebar-menu-item:hover {
+.menu-item-content {
+  display: flex;
+  align-items: center;
+  padding: var(--space-3) var(--space-4);
+}
+
+.sidebar-menu-item:hover > .menu-item-content {
   background-color: var(--color-grey-100);
 }
 
-.sidebar-menu-item.active {
+.sidebar-menu-item.active > .menu-item-content {
   background-color: var(--color-primary-light);
   color: var(--color-primary-dark);
   font-weight: 500;
@@ -182,6 +243,47 @@ const toggleProfileModal = () => {
 
 .collapsed .menu-icon {
   margin-right: 0;
+}
+
+.submenu-indicator {
+  margin-left: auto;
+  font-size: 0.75rem;
+  transition: transform var(--transition-speed) ease;
+}
+
+.expanded .submenu-indicator {
+  transform: rotate(180deg);
+}
+
+.submenu {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
+  max-height: 0;
+  transition: max-height var(--transition-speed) ease;
+}
+
+.submenu.show {
+  max-height: 500px;
+}
+
+.submenu-item {
+  display: flex;
+  align-items: center;
+  padding: var(--space-2) var(--space-4) var(--space-2) calc(var(--space-4) + 24px + var(--space-3));
+  cursor: pointer;
+  transition: background-color var(--transition-speed) ease;
+}
+
+.submenu-item:hover {
+  background-color: var(--color-grey-100);
+}
+
+.submenu-item.active {
+  background-color: var(--color-primary-light);
+  color: var(--color-primary-dark);
+  font-weight: 500;
 }
 
 .sidebar-profile {
@@ -270,4 +372,3 @@ const toggleProfileModal = () => {
   }
 }
 </style>
-```

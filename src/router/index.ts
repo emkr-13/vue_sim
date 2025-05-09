@@ -1,59 +1,66 @@
-import { createRouter, createWebHistory } from 'vue-router';
-import { useAuthStore } from '@/stores/auth';
+import { createRouter, createWebHistory } from "vue-router";
+import { useAuthStore } from "@/stores/auth";
 
-const LoginView = () => import('@/views/LoginView.vue');
-const DashboardView = () => import('@/views/DashboardView.vue');
-const ProfileView = () => import('@/views/ProfileView.vue');
-const CategoriesView = () => import('@/views/CategoriesView.vue');
+const LoginView = () => import("@/views/LoginView.vue");
+const DashboardView = () => import("@/views/DashboardView.vue");
+const ProfileView = () => import("@/views/ProfileView.vue");
+const CategoriesView = () => import("@/views/CategoriesView.vue");
+const StoresView = () => import("@/views/StoresView.vue");
 
 const routes = [
   {
-    path: '/',
-    redirect: '/login'
+    path: "/",
+    redirect: "/login",
   },
   {
-    path: '/login',
-    name: 'login',
+    path: "/login",
+    name: "login",
     component: LoginView,
-    meta: { requiresAuth: false }
+    meta: { requiresAuth: false },
   },
   {
-    path: '/dashboard',
-    name: 'dashboard',
+    path: "/dashboard",
+    name: "dashboard",
     component: DashboardView,
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: true },
   },
   {
-    path: '/categories',
-    name: 'categories',
+    path: "/categories",
+    name: "categories",
     component: CategoriesView,
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: true },
   },
   {
-    path: '/profile',
-    name: 'profile',
+    path: "/stores",
+    name: "stores",
+    component: StoresView,
+    meta: { requiresAuth: true },
+  },
+  {
+    path: "/profile",
+    name: "profile",
     component: ProfileView,
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: true },
   },
   {
-    path: '/:catchAll(.*)',
-    redirect: '/dashboard'
-  }
+    path: "/:catchAll(.*)",
+    redirect: "/dashboard",
+  },
 ];
 
 const router = createRouter({
   history: createWebHistory(),
-  routes
+  routes,
 });
 
 router.beforeEach((to, from, next) => {
   const authStore = useAuthStore();
-  const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
-  
+  const requiresAuth = to.matched.some((record) => record.meta.requiresAuth);
+
   if (requiresAuth && !authStore.isAuthenticated) {
-    next('/login');
-  } else if (to.path === '/login' && authStore.isAuthenticated) {
-    next('/dashboard');
+    next("/login");
+  } else if (to.path === "/login" && authStore.isAuthenticated) {
+    next("/dashboard");
   } else {
     next();
   }

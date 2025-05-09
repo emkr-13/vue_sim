@@ -1,5 +1,10 @@
 import api from './api';
-import type { CategoriesResponse, CategoryDetailResponse } from '@/types';
+import type { 
+  CategoriesResponse, 
+  CategoryDetailResponse, 
+  CreateCategoryRequest,
+  UpdateCategoryRequest 
+} from '@/types';
 
 interface GetCategoriesParams {
   search?: string;
@@ -27,5 +32,19 @@ export const categoriesService = {
   getDetail: async (id: number): Promise<CategoryDetailResponse> => {
     const response = await api.post<CategoryDetailResponse>('/categories/detail', { id });
     return response.data;
+  },
+
+  create: async (data: CreateCategoryRequest): Promise<CategoryDetailResponse> => {
+    const response = await api.post<CategoryDetailResponse>('/categories/create', data);
+    return response.data;
+  },
+
+  update: async (data: UpdateCategoryRequest): Promise<CategoryDetailResponse> => {
+    const response = await api.post<CategoryDetailResponse>('/categories/update', data);
+    return response.data;
+  },
+
+  delete: async (id: number): Promise<void> => {
+    await api.post('/categories/delete', { id });
   }
 };
