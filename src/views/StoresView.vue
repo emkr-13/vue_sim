@@ -2,10 +2,8 @@
 import { ref, onMounted } from "vue";
 import { useStoresStore } from "@/stores/stores";
 import DashboardLayout from "@/layouts/DashboardLayout.vue";
-import DataTable from "@/components/DataTable.vue";
 import ModalDialog from "@/components/ModalDialog.vue";
 import StoreForm from "@/components/StoreForm.vue";
-import Pagination from "@/components/Pagination.vue";
 import type { Store, CreateStoreRequest, UpdateStoreRequest } from "@/types";
 
 const storesStore = useStoresStore();
@@ -37,20 +35,6 @@ const editStore = ref<UpdateStoreRequest>({
   email: "",
   address: "",
 });
-
-const tableColumns = [
-  { key: "name", label: "Name", sortable: true },
-  { key: "description", label: "Description" },
-  { key: "location", label: "Location" },
-  { key: "manager", label: "Manager" },
-  { key: "email", label: "Email" },
-  {
-    key: "createdAt",
-    label: "Created At",
-    sortable: true,
-    formatter: (value: string) => new Date(value).toLocaleDateString(),
-  },
-];
 
 onMounted(() => {
   loadStores();
@@ -156,67 +140,142 @@ const handleDelete = async (store: Store) => {
 
 <template>
   <DashboardLayout>
-    <div class="stores">
-      <div class="page-header">
-        <h2 class="page-title">Stores</h2>
-
-        <div class="filters">
-          <div class="search-box">
-            <input
-              type="text"
-              v-model="searchQuery"
-              placeholder="Search stores..."
-              class="form-control"
-              @keyup.enter="handleSearch"
-            />
-            <button class="btn btn-primary" @click="handleSearch">
-              Search
-            </button>
-          </div>
-
-          <select
-            v-model="itemsPerPage"
-            class="form-control"
-            @change="
-              handleLimitChange(
-                Number(($event.target as HTMLSelectElement).value) as
-                  | 1
-                  | 10
-                  | 100
-                  | 1000
-              )
-            "
-          >
-            <option :value="1">1 per page</option>
-            <option :value="10">10 per page</option>
-            <option :value="100">100 per page</option>
-            <option :value="1000">1000 per page</option>
-          </select>
-
-          <button class="btn btn-primary" @click="openCreateModal">
-            Add Store
-          </button>
+    <div class="stores-container">
+      <!-- Top Navigation Bar -->
+      <div class="top-nav">
+        <div class="menu-icon">
+          <i class="fas fa-bars"></i>
+          <span>Stores</span>
         </div>
       </div>
 
-      <div class="stores-list card">
-        <DataTable
-          :columns="tableColumns"
-          :data="storesStore.stores"
-          :loading="storesStore.loading"
-          :sort-by="sortBy"
-          :sort-order="sortOrder"
-          @sort="handleSort"
-          @view="viewStoreDetail"
-          @edit="openEditModal"
-          @delete="handleDelete"
-        />
+      <!-- Main Content -->
+      <div class="stores-content">
+        <h2 class="section-title">Stores</h2>
 
-        <Pagination
-          v-if="storesStore.pagination"
-          :pagination="storesStore.pagination"
-          @page-change="handlePageChange"
-        />
+        <!-- Search and Actions Bar -->
+        <div class="action-bar">
+          <div class="search-wrapper">
+            <input
+              type="text"
+              v-model="searchQuery"
+              placeholder="Search..."
+              class="search-input"
+            />
+            <button class="search-button" @click="handleSearch">Search</button>
+          </div>
+
+          <div class="action-right">
+            <select
+              v-model="itemsPerPage"
+              class="items-per-page"
+              @change="
+                handleLimitChange(
+                  Number(($event.target as HTMLSelectElement).value) as
+                    | 1
+                    | 10
+                    | 100
+                    | 1000
+                )
+              "
+            >
+              <option :value="10">10 per page</option>
+              <option :value="20">20 per page</option>
+              <option :value="50">50 per page</option>
+              <option :value="100">100 per page</option>
+            </select>
+
+            <button class="add-button" @click="openCreateModal">
+              Add Store
+            </button>
+          </div>
+        </div>
+
+        <!-- Stores Table -->
+        <div class="stores-table">
+          <table>
+            <thead>
+              <tr>
+                <th @click="handleSort('name')" class="sortable">
+                  Name
+                  <span v-if="sortBy === 'name'" class="sort-icon">
+                    {{ sortOrder === "asc" ? "▲" : "▼" }}
+                  </span>
+                </th>
+                <th>Description</th>
+                <th>Location</th>
+                <th>Manager</th>
+                <th>Email</th>
+                <th @click="handleSort('createdAt')" class="sortable">
+                  Created At
+                  <span v-if="sortBy === 'createdAt'" class="sort-icon">
+                    {{ sortOrder === "asc" ? "▲" : "▼" }}
+                  </span>
+                </th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="store in storesStore.stores" :key="store.id">
+                <td>{{ store.name }}</td>
+                <td>{{ store.description }}</td>
+                <td>{{ store.location }}</td>
+                <td>{{ store.manager }}</td>
+                <td>{{ store.email }}</td>
+                <td>{{ new Date(store.createdAt).toLocaleDateString() }}</td>
+                <td class="actions-cell">
+                  <button class="view-btn" @click="viewStoreDetail(store)">
+                    View
+                  </button>
+                  <button class="edit-btn" @click="openEditModal(store)">
+                    Edit
+                  </button>
+                  <button class="delete-btn" @click="handleDelete(store)">
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination-container">
+          <button
+            class="pagination-btn"
+            :disabled="currentPage === 1"
+            @click="handlePageChange(currentPage - 1)"
+          >
+            « Prev
+          </button>
+
+          <button
+            class="pagination-btn"
+            :class="{ active: currentPage === 1 }"
+            @click="handlePageChange(1)"
+          >
+            1
+          </button>
+
+          <button
+            class="pagination-btn"
+            :class="{ active: currentPage === 2 }"
+            @click="handlePageChange(2)"
+          >
+            2
+          </button>
+
+          <button
+            class="pagination-btn"
+            @click="handlePageChange(currentPage + 1)"
+            :disabled="
+              !storesStore.pagination ||
+              currentPage >= storesStore.pagination.total_page
+            "
+          >
+            Next »
+          </button>
+        </div>
       </div>
 
       <!-- Create Store Modal -->
@@ -293,67 +352,228 @@ const handleDelete = async (store: Store) => {
 </template>
 
 <style scoped>
-.stores {
-  padding: var(--space-4);
+.stores-container {
+  width: 100%;
+  background-color: #f8f9fa;
+  min-height: 100vh;
 }
 
-.page-header {
-  margin-bottom: var(--space-4);
+.top-nav {
+  background-color: #fff;
+  padding: 1rem;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+}
+
+.menu-icon {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-weight: 500;
+}
+
+.stores-content {
+  padding: 1.5rem;
+}
+
+.section-title {
+  font-size: 1.5rem;
+  font-weight: 500;
+  margin-bottom: 1.5rem;
+}
+
+.action-bar {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: 1rem;
   flex-wrap: wrap;
-  gap: var(--space-4);
+  gap: 1rem;
 }
 
-.page-title {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: var(--color-grey-900);
-}
-
-.filters {
+.search-wrapper {
   display: flex;
-  gap: var(--space-3);
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
+  overflow: hidden;
+  width: 300px;
+  background-color: #fff;
+}
+
+.search-input {
+  flex: 1;
+  padding: 0.5rem 1rem;
+  border: none;
+  outline: none;
+}
+
+.search-button {
+  background-color: #4f46e5;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.search-button:hover {
+  background-color: #4338ca;
+}
+
+.action-right {
+  display: flex;
+  gap: 1rem;
   align-items: center;
 }
 
-.search-box {
+.items-per-page {
+  padding: 0.5rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
+  background-color: #fff;
+}
+
+.add-button {
+  background-color: #4f46e5;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.add-button:hover {
+  background-color: #4338ca;
+}
+
+.stores-table {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+thead {
+  background-color: #f9fafb;
+}
+
+th {
+  text-align: left;
+  padding: 0.75rem 1rem;
+  font-weight: 500;
+  color: #4b5563;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+th.sortable {
+  cursor: pointer;
+}
+
+th.sortable:hover {
+  background-color: #f3f4f6;
+}
+
+.sort-icon {
+  margin-left: 0.25rem;
+}
+
+td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.actions-cell {
   display: flex;
-  gap: var(--space-2);
+  gap: 0.5rem;
+}
+
+.view-btn,
+.edit-btn,
+.delete-btn {
+  padding: 0.25rem 0.75rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.875rem;
+}
+
+.view-btn {
+  background-color: #3b82f6;
+  color: white;
+}
+
+.edit-btn {
+  background-color: #10b981;
+  color: white;
+}
+
+.delete-btn {
+  background-color: #ef4444;
+  color: white;
+}
+
+.pagination-container {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.pagination-btn {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #e5e7eb;
+  background-color: #fff;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.pagination-btn.active {
+  background-color: #4f46e5;
+  color: white;
+  border-color: #4f46e5;
+}
+
+.pagination-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .detail-group {
-  margin-bottom: var(--space-3);
+  margin-bottom: 1rem;
 }
 
 .detail-group label {
   font-weight: 600;
-  color: var(--color-grey-700);
-  margin-bottom: var(--space-1);
+  color: #4b5563;
+  margin-bottom: 0.25rem;
   display: block;
 }
 
 .store-details {
-  padding: var(--space-2) 0;
+  padding: 1rem 0;
 }
 
 @media (max-width: 768px) {
-  .page-header {
+  .action-bar {
     flex-direction: column;
     align-items: stretch;
   }
 
-  .filters {
-    flex-direction: column;
-  }
-
-  .search-box {
+  .search-wrapper {
     width: 100%;
   }
 
-  .search-box input {
-    flex: 1;
+  .action-right {
+    width: 100%;
+    justify-content: space-between;
   }
 }
 </style>
