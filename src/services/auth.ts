@@ -16,7 +16,7 @@ export const authService = {
   },
 
   getUserProfile: async (): Promise<UserProfileResponse> => {
-    const response = await api.get<UserProfileResponse>("/user/detail");
+    const response = await api.get<UserProfileResponse>("/user/profile");
     return response.data;
   },
 

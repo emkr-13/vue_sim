@@ -74,10 +74,10 @@ export interface Product {
 }
 
 export interface DashboardGeneralSummary {
-  totalUsers: number;
-  totalProducts: number;
-  totalCategories: number;
-  totalStores: number;
+  total_customers: string;
+  total_suppliers: string;
+  total_stores: string;
+  total_products: string;
 }
 
 export interface Transaction {
@@ -88,10 +88,11 @@ export interface Transaction {
 }
 
 export interface DashboardSpecificSummary {
-  salesTotal: number;
-  purchasesTotal: number;
-  transactionsCount: number;
-  recentTransactions: Transaction[];
+  total_quotations: string;
+  total_purchases: string;
+  total_stock_movements_in: string;
+  total_stock_movements_out: string;
+  time_filter: string;
 }
 
 export interface Pagination {

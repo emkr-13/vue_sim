@@ -6,11 +6,10 @@ import type {
 
 type TimeFilter =
   | "today"
-  | "yesterday"
+  | "this_week"
   | "last_week"
   | "last_two_weeks"
-  | "last_month"
-  | "last_year";
+  | "this_month";
 
 export const dashboardService = {
   getGeneralSummary: async (): Promise<DashboardGeneralResponse> => {
@@ -21,7 +20,7 @@ export const dashboardService = {
   },
 
   getSpecificSummary: async (
-    timeFilter: TimeFilter = "last_two_weeks"
+    timeFilter: TimeFilter = "this_month"
   ): Promise<DashboardSpecificResponse> => {
     const response = await api.get<DashboardSpecificResponse>(
       `/dashboard/summary-specific?time_filter=${timeFilter}`
