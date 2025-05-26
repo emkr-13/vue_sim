@@ -3,7 +3,7 @@
 import { computed } from "vue";
 import { useAuthStore } from "@/stores/auth";
 
-const props = defineProps({
+defineProps({
   show: {
     type: Boolean,
     required: true,

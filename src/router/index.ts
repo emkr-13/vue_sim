@@ -1,12 +1,7 @@
 import { createRouter, createWebHistory } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
 
-const LoginView = () => import("@/views/LoginView.vue");
-const DashboardView = () => import("@/views/DashboardView.vue");
-const ProfileView = () => import("@/views/ProfileView.vue");
-const CategoriesView = () => import("@/views/CategoriesView.vue");
-const StoresView = () => import("@/views/StoresView.vue");
-
+// Define routes with components loaded dynamically
 const routes = [
   {
     path: "/",
@@ -15,31 +10,67 @@ const routes = [
   {
     path: "/login",
     name: "login",
-    component: LoginView,
+    component: () => import("@/views/LoginView.vue"),
     meta: { requiresAuth: false },
   },
   {
     path: "/dashboard",
     name: "dashboard",
-    component: DashboardView,
+    component: () => import("@/views/DashboardView.vue"),
     meta: { requiresAuth: true },
   },
   {
     path: "/categories",
     name: "categories",
-    component: CategoriesView,
+    component: () => import("@/views/CategoriesView.vue"),
     meta: { requiresAuth: true },
   },
   {
     path: "/stores",
     name: "stores",
-    component: StoresView,
+    component: () => import("@/views/StoresView.vue"),
+    meta: { requiresAuth: true },
+  },
+  {
+    path: "/products",
+    name: "products",
+    component: () => import("@/views/ProductsView.vue"),
+    meta: { requiresAuth: true },
+  },
+  {
+    path: "/stock-movements",
+    name: "stockMovements",
+    component: () => import("@/views/StockMovementsView.vue"),
+    meta: { requiresAuth: true },
+  },
+  {
+    path: "/quotations",
+    name: "quotations",
+    component: () => import("@/views/QuotationsView.vue"),
+    meta: { requiresAuth: true },
+  },
+  {
+    path: "/purchases",
+    name: "purchases",
+    component: () => import("@/views/PurchasesView.vue"),
+    meta: { requiresAuth: true },
+  },
+  {
+    path: "/reports",
+    name: "reports",
+    component: () => import("@/views/ReportsView.vue"),
+    meta: { requiresAuth: true },
+  },
+  {
+    path: "/accounts",
+    name: "accounts",
+    component: () => import("@/views/AccountsView.vue"),
     meta: { requiresAuth: true },
   },
   {
     path: "/profile",
     name: "profile",
-    component: ProfileView,
+    component: () => import("@/views/ProfileView.vue"),
     meta: { requiresAuth: true },
   },
   {
@@ -53,7 +84,7 @@ const router = createRouter({
   routes,
 });
 
-router.beforeEach((to, from, next) => {
+router.beforeEach((to, _from, next) => {
   const authStore = useAuthStore();
   const requiresAuth = to.matched.some((record) => record.meta.requiresAuth);
 

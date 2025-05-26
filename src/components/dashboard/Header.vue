@@ -1,20 +1,20 @@
 <script setup lang="ts">
-import { useAuthStore } from '@/stores/auth';
-import type { PropType } from 'vue';
+import { useAuthStore } from "@/stores/auth";
+import type { PropType } from "vue";
 
-const props = defineProps({
+defineProps({
   toggleSidebar: {
     type: Function as PropType<(event: MouseEvent) => void>,
-    required: true
+    required: true,
   },
   sidebarCollapsed: {
     type: Boolean,
-    default: false
+    default: false,
   },
   logout: {
     type: Function as PropType<(event: MouseEvent) => void>,
-    required: true
-  }
+    required: true,
+  },
 });
 
 const authStore = useAuthStore();
@@ -29,7 +29,7 @@ const user = authStore.user;
       </button>
       <h2 class="header-title">{{ $route.name }}</h2>
     </div>
-    
+
     <div class="header-end">
       <div class="user-profile" v-if="user">
         <span class="user-name">{{ user.fullname }}</span>

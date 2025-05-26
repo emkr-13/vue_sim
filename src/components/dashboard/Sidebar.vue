@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-import { useRouter } from 'vue-router';
-import { useAuthStore } from '@/stores/auth';
-import ProfileModal from '@/components/profile/ProfileModal.vue';
+import { ref } from "vue";
+import { useRouter } from "vue-router";
+import { useAuthStore } from "@/stores/auth";
+import ProfileModal from "@/components/profile/ProfileModal.vue";
 
 defineProps({
   collapsed: {
     type: Boolean,
-    default: false
-  }
+    default: false,
+  },
 });
 
 const router = useRouter();
@@ -17,28 +17,63 @@ const user = authStore.user;
 const showProfileModal = ref(false);
 
 const menuItems = [
-  { 
-    name: 'Dashboard', 
-    icon: '📊', 
-    route: '/dashboard',
-    active: true 
+  {
+    name: "Dashboard",
+    icon: "📊",
+    route: "/dashboard",
+    active: true,
   },
   {
-    name: 'Inventory',
-    icon: '📦',
+    name: "Inventory",
+    icon: "📦",
     submenu: [
       {
-        name: 'Categories',
-        icon: '📁',
-        route: '/categories'
+        name: "Categories",
+        icon: "📁",
+        route: "/categories",
       },
       {
-        name: 'Stores',
-        icon: '🏪',
-        route: '/stores'
-      }
-    ]
-  }
+        name: "Stores",
+        icon: "🏪",
+        route: "/stores",
+      },
+      {
+        name: "Products",
+        icon: "📝",
+        route: "/products",
+      },
+      {
+        name: "Stock Movements",
+        icon: "🔄",
+        route: "/stock-movements",
+      },
+    ],
+  },
+  {
+    name: "Quotation",
+    icon: "📋",
+    route: "/quotations",
+  },
+  {
+    name: "Purchase",
+    icon: "🛒",
+    route: "/purchases",
+  },
+  {
+    name: "Report",
+    icon: "📈",
+    route: "/reports",
+  },
+  {
+    name: "Accounts",
+    icon: "👥",
+    route: "/accounts",
+  },
+  {
+    name: "User Profile",
+    icon: "👤",
+    route: "/profile",
+  },
 ];
 
 const expandedMenus = ref<string[]>([]);
@@ -70,55 +105,56 @@ const toggleProfileModal = () => {
 </script>
 
 <template>
-  <aside class="sidebar" :class="{ 'collapsed': collapsed }">
+  <aside class="sidebar" :class="{ collapsed: collapsed }">
     <div class="sidebar-header">
       <h1 class="sidebar-logo" v-if="!collapsed">Admin</h1>
       <span class="sidebar-logo-icon" v-else>A</span>
     </div>
-    
+
     <nav class="sidebar-nav">
       <ul class="sidebar-menu">
-        <li 
-          v-for="item in menuItems" 
+        <li
+          v-for="item in menuItems"
           :key="item.name"
-          :class="{ 
+          :class="{
             'sidebar-menu-item': true,
             'has-submenu': item.submenu,
-            'active': item.route && $route.path === item.route,
-            'expanded': isSubmenuExpanded(item.name)
+            active: item.route && $route.path === item.route,
+            expanded: isSubmenuExpanded(item.name),
           }"
         >
-          <div 
+          <div
             class="menu-item-content"
-            @click="item.submenu ? toggleSubmenu(item.name) : navigateTo(item.route!)"
+            @click="
+              item.submenu ? toggleSubmenu(item.name) : navigateTo(item.route!)
+            "
           >
             <span class="menu-icon">{{ item.icon }}</span>
             <span class="menu-text" v-if="!collapsed">{{ item.name }}</span>
-            <span 
-              v-if="item.submenu && !collapsed" 
-              class="submenu-indicator"
-            >
-              {{ isSubmenuExpanded(item.name) ? '▼' : '▶' }}
+            <span v-if="item.submenu && !collapsed" class="submenu-indicator">
+              {{ isSubmenuExpanded(item.name) ? "▼" : "▶" }}
             </span>
           </div>
-          
-          <ul 
-            v-if="item.submenu" 
+
+          <ul
+            v-if="item.submenu"
             class="submenu"
-            :class="{ 
-              'show': isSubmenuExpanded(item.name) && !collapsed,
-              'collapsed': collapsed 
+            :class="{
+              show: isSubmenuExpanded(item.name) && !collapsed,
+              collapsed: collapsed,
             }"
           >
-            <li 
+            <li
               v-for="subitem in item.submenu"
               :key="subitem.name"
               class="submenu-item"
-              :class="{ 'active': $route.path === subitem.route }"
+              :class="{ active: $route.path === subitem.route }"
               @click="navigateTo(subitem.route)"
             >
               <span class="menu-icon">{{ subitem.icon }}</span>
-              <span class="menu-text" v-if="!collapsed">{{ subitem.name }}</span>
+              <span class="menu-text" v-if="!collapsed">{{
+                subitem.name
+              }}</span>
             </li>
           </ul>
         </li>
@@ -128,11 +164,11 @@ const toggleProfileModal = () => {
     <div class="sidebar-profile">
       <div class="profile-container" @click="toggleProfileModal">
         <div class="profile-avatar">
-          {{ user?.fullname?.charAt(0).toUpperCase() || 'U' }}
+          {{ user?.fullname?.charAt(0).toUpperCase() || "U" }}
         </div>
         <div class="profile-info" v-if="!collapsed">
-          <p class="profile-name">{{ user?.fullname || 'User' }}</p>
-          <p class="profile-email">{{ user?.email || 'No email' }}</p>
+          <p class="profile-name">{{ user?.fullname || "User" }}</p>
+          <p class="profile-email">{{ user?.email || "No email" }}</p>
         </div>
       </div>
       <button class="logout-button" @click="handleLogout">
@@ -141,10 +177,7 @@ const toggleProfileModal = () => {
       </button>
     </div>
 
-    <ProfileModal 
-      :show="showProfileModal"
-      @close="showProfileModal = false"
-    />
+    <ProfileModal :show="showProfileModal" @close="showProfileModal = false" />
   </aside>
 </template>
 
@@ -152,8 +185,9 @@ const toggleProfileModal = () => {
 .sidebar {
   width: var(--sidebar-width);
   height: 100vh;
-  background-color: white;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+  background-color: #1e293b; /* Dark blue background */
+  color: #e2e8f0; /* Light text */
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
   display: flex;
   flex-direction: column;
   transition: width var(--transition-speed) ease;
@@ -170,15 +204,16 @@ const toggleProfileModal = () => {
 
 .sidebar-header {
   padding: var(--space-4);
-  border-bottom: 1px solid var(--color-grey-200);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
   align-items: center;
   justify-content: flex-start;
   height: 72px;
+  background-color: #0f172a; /* Darker blue for header */
 }
 
 .sidebar-logo {
-  color: var(--color-primary);
+  color: #38bdf8; /* Light blue for logo */
   font-size: 1.5rem;
   font-weight: 700;
   margin: 0;
@@ -191,7 +226,7 @@ const toggleProfileModal = () => {
   justify-content: center;
   width: 40px;
   height: 40px;
-  background-color: var(--color-primary);
+  background-color: #38bdf8; /* Light blue */
   color: white;
   border-radius: 50%;
   font-weight: 700;
@@ -214,6 +249,7 @@ const toggleProfileModal = () => {
   cursor: pointer;
   transition: background-color var(--transition-speed) ease;
   white-space: nowrap;
+  border-left: 3px solid transparent;
 }
 
 .menu-item-content {
@@ -223,13 +259,14 @@ const toggleProfileModal = () => {
 }
 
 .sidebar-menu-item:hover > .menu-item-content {
-  background-color: var(--color-grey-100);
+  background-color: rgba(255, 255, 255, 0.05);
 }
 
 .sidebar-menu-item.active > .menu-item-content {
-  background-color: var(--color-primary-light);
-  color: var(--color-primary-dark);
+  background-color: rgba(56, 189, 248, 0.1); /* Light blue with opacity */
+  color: #38bdf8; /* Light blue */
   font-weight: 500;
+  border-left: 3px solid #38bdf8;
 }
 
 .menu-icon {
@@ -248,75 +285,103 @@ const toggleProfileModal = () => {
 .submenu-indicator {
   margin-left: auto;
   font-size: 0.75rem;
-  transition: transform var(--transition-speed) ease;
+  transition: transform 0.2s ease;
 }
 
 .expanded .submenu-indicator {
   transform: rotate(180deg);
 }
 
+.menu-text {
+  font-size: 0.95rem;
+}
+
 .submenu {
   list-style: none;
   padding: 0;
   margin: 0;
-  overflow: hidden;
   max-height: 0;
-  transition: max-height var(--transition-speed) ease;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
 }
 
 .submenu.show {
-  max-height: 500px;
+  max-height: 500px; /* Adjust as needed */
+}
+
+.submenu.collapsed {
+  position: absolute;
+  left: 100%;
+  top: 0;
+  background-color: #1e293b;
+  box-shadow: 5px 0 10px rgba(0, 0, 0, 0.1);
+  min-width: 200px;
+  max-height: none;
+  display: none;
+}
+
+.sidebar-menu-item:hover .submenu.collapsed {
+  display: block;
 }
 
 .submenu-item {
   display: flex;
   align-items: center;
-  padding: var(--space-2) var(--space-4) var(--space-2) calc(var(--space-4) + 24px + var(--space-3));
+  padding: var(--space-2) var(--space-4) var(--space-2)
+    calc(var(--space-4) + 24px + var(--space-3));
   cursor: pointer;
   transition: background-color var(--transition-speed) ease;
 }
 
+.collapsed .submenu-item {
+  padding: var(--space-3) var(--space-4);
+}
+
 .submenu-item:hover {
-  background-color: var(--color-grey-100);
+  background-color: rgba(255, 255, 255, 0.05);
 }
 
 .submenu-item.active {
-  background-color: var(--color-primary-light);
-  color: var(--color-primary-dark);
+  background-color: rgba(56, 189, 248, 0.1);
+  color: #38bdf8;
   font-weight: 500;
 }
 
 .sidebar-profile {
-  border-top: 1px solid var(--color-grey-200);
-  padding: var(--space-3);
-  margin-top: auto;
-  background-color: var(--color-grey-100);
+  padding: var(--space-4);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background-color: #0f172a; /* Darker blue for footer */
 }
 
 .profile-container {
   display: flex;
   align-items: center;
-  padding-bottom: var(--space-3);
+  margin-bottom: var(--space-3);
   cursor: pointer;
-  transition: opacity var(--transition-speed) ease;
+  padding: var(--space-2);
+  border-radius: var(--border-radius);
+  transition: background-color var(--transition-speed) ease;
 }
 
 .profile-container:hover {
-  opacity: 0.8;
+  background-color: rgba(255, 255, 255, 0.05);
 }
 
 .profile-avatar {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background-color: var(--color-primary);
+  background-color: #38bdf8;
   color: white;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 600;
   margin-right: var(--space-3);
-  flex-shrink: 0;
+}
+
+.collapsed .profile-avatar {
+  margin-right: 0;
 }
 
 .profile-info {
@@ -324,18 +389,18 @@ const toggleProfileModal = () => {
 }
 
 .profile-name {
-  font-weight: 600;
-  color: var(--color-grey-900);
   margin: 0;
+  font-weight: 500;
+  font-size: 0.95rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .profile-email {
-  font-size: 0.875rem;
-  color: var(--color-grey-600);
   margin: 0;
+  font-size: 0.8rem;
+  color: #94a3b8; /* Lighter gray */
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -345,30 +410,30 @@ const toggleProfileModal = () => {
   display: flex;
   align-items: center;
   width: 100%;
-  padding: var(--space-2) var(--space-3);
+  padding: var(--space-2);
   background-color: transparent;
   border: none;
-  border-radius: var(--border-radius-md);
+  color: #e2e8f0;
   cursor: pointer;
-  color: var(--color-grey-700);
-  transition: all var(--transition-speed) ease;
+  border-radius: var(--border-radius);
+  transition: background-color var(--transition-speed) ease;
 }
 
 .logout-button:hover {
-  background-color: var(--color-grey-200);
-  color: var(--color-error);
+  background-color: rgba(255, 255, 255, 0.05);
 }
 
 @media (max-width: 768px) {
   .sidebar {
     transform: translateX(-100%);
-    position: fixed;
-    z-index: 1000;
   }
-  
-  .sidebar.collapsed {
-    width: var(--sidebar-width);
+
+  .sidebar.show {
     transform: translateX(0);
+  }
+
+  .sidebar.collapsed {
+    transform: translateX(-100%);
   }
 }
 </style>
