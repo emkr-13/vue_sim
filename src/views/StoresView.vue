@@ -2,6 +2,10 @@
 import { ref, onMounted } from "vue";
 import { useStoresStore } from "@/stores/stores";
 import DashboardLayout from "@/layouts/DashboardLayout.vue";
+import DataTable from "@/components/DataTable.vue";
+import ModalDialog from "@/components/ModalDialog.vue";
+import StoreForm from "@/components/StoreForm.vue";
+import Pagination from "@/components/Pagination.vue";
 import type { Store, CreateStoreRequest, UpdateStoreRequest } from "@/types";
 
 const storesStore = useStoresStore();
@@ -13,6 +17,7 @@ const sortOrder = ref<"asc" | "desc">("desc");
 const selectedStore = ref<Store | null>(null);
 const showCreateModal = ref(false);
 const showEditModal = ref(false);
+const showDetailModal = ref(false);
 
 const newStore = ref<CreateStoreRequest>({
   name: "",
@@ -33,6 +38,20 @@ const editStore = ref<UpdateStoreRequest>({
   address: "",
 });
 
+const tableColumns = [
+  { key: "name", label: "Name", sortable: true },
+  { key: "description", label: "Description" },
+  { key: "location", label: "Location" },
+  { key: "manager", label: "Manager" },
+  { key: "email", label: "Email" },
+  {
+    key: "createdAt",
+    label: "Created At",
+    sortable: true,
+    formatter: (value: string) => new Date(value).toLocaleDateString(),
+  },
+];
+
 onMounted(() => {
   loadStores();
 });
@@ -52,11 +71,11 @@ const handleSearch = async () => {
   await loadStores();
 };
 
-const handleSort = async (field: "name" | "createdAt") => {
+const handleSort = async (field: string) => {
   if (sortBy.value === field) {
     sortOrder.value = sortOrder.value === "asc" ? "desc" : "asc";
   } else {
-    sortBy.value = field;
+    sortBy.value = field as "name" | "createdAt";
     sortOrder.value = "asc";
   }
   await loadStores();
@@ -73,12 +92,20 @@ const handleLimitChange = async (limit: 1 | 10 | 100 | 1000) => {
   await loadStores();
 };
 
-const viewStoreDetail = async (id: number) => {
-  await storesStore.fetchStoreDetail(id);
-  selectedStore.value = storesStore.selectedStore;
+const viewStoreDetail = async (store: Store) => {
+  selectedStore.value = store;
+  showDetailModal.value = true;
 };
 
 const openCreateModal = () => {
+  newStore.value = {
+    name: "",
+    description: "",
+    location: "",
+    manager: "",
+    email: "",
+    address: "",
+  };
   showCreateModal.value = true;
 };
 
@@ -95,27 +122,19 @@ const openEditModal = (store: Store) => {
   showEditModal.value = true;
 };
 
-const handleCreate = async () => {
+const handleCreate = async (data: CreateStoreRequest) => {
   try {
-    await storesStore.createStore(newStore.value);
+    await storesStore.createStore(data);
     showCreateModal.value = false;
-    newStore.value = {
-      name: "",
-      description: "",
-      location: "",
-      manager: "",
-      email: "",
-      address: "",
-    };
     await loadStores();
   } catch (error) {
     console.error("Failed to create store:", error);
   }
 };
 
-const handleUpdate = async () => {
+const handleUpdate = async (data: UpdateStoreRequest | CreateStoreRequest) => {
   try {
-    await storesStore.updateStore(editStore.value);
+    await storesStore.updateStore(data as UpdateStoreRequest);
     showEditModal.value = false;
     await loadStores();
   } catch (error) {
@@ -123,10 +142,10 @@ const handleUpdate = async () => {
   }
 };
 
-const handleDelete = async (id: number) => {
+const handleDelete = async (store: Store) => {
   if (confirm("Are you sure you want to delete this store?")) {
     try {
-      await storesStore.deleteStore(id);
+      await storesStore.deleteStore(store.id);
       await loadStores();
     } catch (error) {
       console.error("Failed to delete store:", error);
@@ -180,218 +199,56 @@ const handleDelete = async (id: number) => {
         </div>
       </div>
 
-      <div class="stores-list card" v-if="!storesStore.loading">
-        <table class="stores-table">
-          <thead>
-            <tr>
-              <th>
-                <button class="sort-button" @click="handleSort('name')">
-                  Name
-                  <span v-if="sortBy === 'name'" class="sort-indicator">
-                    {{ sortOrder === "asc" ? "↑" : "↓" }}
-                  </span>
-                </button>
-              </th>
-              <th>Description</th>
-              <th>Location</th>
-              <th>Manager</th>
-              <th>Email</th>
-              <th>
-                <button class="sort-button" @click="handleSort('createdAt')">
-                  Created At
-                  <span v-if="sortBy === 'createdAt'" class="sort-indicator">
-                    {{ sortOrder === "asc" ? "↑" : "↓" }}
-                  </span>
-                </button>
-              </th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="store in storesStore.stores" :key="store.id">
-              <td>{{ store.name }}</td>
-              <td>{{ store.description }}</td>
-              <td>{{ store.location }}</td>
-              <td>{{ store.manager }}</td>
-              <td>{{ store.email }}</td>
-              <td>{{ new Date(store.createdAt).toLocaleDateString() }}</td>
-              <td>
-                <div class="actions">
-                  <button
-                    class="btn btn-primary btn-sm"
-                    @click="viewStoreDetail(store.id)"
-                  >
-                    View
-                  </button>
-                  <button
-                    class="btn btn-outline btn-sm"
-                    @click="openEditModal(store)"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    class="btn btn-error btn-sm"
-                    @click="handleDelete(store.id)"
-                  >
-                    Delete
-                  </button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+      <div class="stores-list card">
+        <DataTable
+          :columns="tableColumns"
+          :data="storesStore.stores"
+          :loading="storesStore.loading"
+          :sort-by="sortBy"
+          :sort-order="sortOrder"
+          @sort="handleSort"
+          @view="viewStoreDetail"
+          @edit="openEditModal"
+          @delete="handleDelete"
+        />
 
-        <div class="pagination" v-if="storesStore.pagination">
-          <button
-            v-for="page in storesStore.pagination.detail"
-            :key="page"
-            class="btn"
-            :class="{ 'btn-primary': page === storesStore.pagination.current }"
-            @click="handlePageChange(page)"
-          >
-            {{ page }}
-          </button>
-        </div>
+        <Pagination
+          v-if="storesStore.pagination"
+          :pagination="storesStore.pagination"
+          @page-change="handlePageChange"
+        />
       </div>
-
-      <div class="loading" v-else>Loading stores...</div>
 
       <!-- Create Store Modal -->
-      <div
-        class="modal"
-        v-if="showCreateModal"
-        @click.self="showCreateModal = false"
+      <ModalDialog
+        :show="showCreateModal"
+        title="Create New Store"
+        @close="showCreateModal = false"
       >
-        <div class="modal-content card">
-          <h3>Create New Store</h3>
-          <form @submit.prevent="handleCreate">
-            <div class="form-group">
-              <label>Name</label>
-              <input v-model="newStore.name" class="form-control" required />
-            </div>
-            <div class="form-group">
-              <label>Description</label>
-              <textarea
-                v-model="newStore.description"
-                class="form-control"
-                required
-              ></textarea>
-            </div>
-            <div class="form-group">
-              <label>Location</label>
-              <input
-                v-model="newStore.location"
-                class="form-control"
-                required
-              />
-            </div>
-            <div class="form-group">
-              <label>Manager</label>
-              <input v-model="newStore.manager" class="form-control" required />
-            </div>
-            <div class="form-group">
-              <label>Email</label>
-              <input
-                type="email"
-                v-model="newStore.email"
-                class="form-control"
-                required
-              />
-            </div>
-            <div class="form-group">
-              <label>Address</label>
-              <textarea
-                v-model="newStore.address"
-                class="form-control"
-                required
-              ></textarea>
-            </div>
-            <div class="modal-actions">
-              <button
-                type="button"
-                class="btn"
-                @click="showCreateModal = false"
-              >
-                Cancel
-              </button>
-              <button type="submit" class="btn btn-primary">Create</button>
-            </div>
-          </form>
-        </div>
-      </div>
+        <StoreForm @submit="handleCreate" @cancel="showCreateModal = false" />
+      </ModalDialog>
 
       <!-- Edit Store Modal -->
-      <div
-        class="modal"
-        v-if="showEditModal"
-        @click.self="showEditModal = false"
+      <ModalDialog
+        :show="showEditModal"
+        title="Edit Store"
+        @close="showEditModal = false"
       >
-        <div class="modal-content card">
-          <h3>Edit Store</h3>
-          <form @submit.prevent="handleUpdate">
-            <div class="form-group">
-              <label>Name</label>
-              <input v-model="editStore.name" class="form-control" required />
-            </div>
-            <div class="form-group">
-              <label>Description</label>
-              <textarea
-                v-model="editStore.description"
-                class="form-control"
-                required
-              ></textarea>
-            </div>
-            <div class="form-group">
-              <label>Location</label>
-              <input
-                v-model="editStore.location"
-                class="form-control"
-                required
-              />
-            </div>
-            <div class="form-group">
-              <label>Manager</label>
-              <input
-                v-model="editStore.manager"
-                class="form-control"
-                required
-              />
-            </div>
-            <div class="form-group">
-              <label>Email</label>
-              <input
-                type="email"
-                v-model="editStore.email"
-                class="form-control"
-                required
-              />
-            </div>
-            <div class="form-group">
-              <label>Address</label>
-              <textarea
-                v-model="editStore.address"
-                class="form-control"
-                required
-              ></textarea>
-            </div>
-            <div class="modal-actions">
-              <button type="button" class="btn" @click="showEditModal = false">
-                Cancel
-              </button>
-              <button type="submit" class="btn btn-primary">Update</button>
-            </div>
-          </form>
-        </div>
-      </div>
+        <StoreForm
+          :store="editStore"
+          :is-edit="true"
+          @submit="handleUpdate"
+          @cancel="showEditModal = false"
+        />
+      </ModalDialog>
 
       <!-- Store Detail Modal -->
-      <div
-        class="modal"
-        v-if="selectedStore"
-        @click.self="selectedStore = null"
+      <ModalDialog
+        :show="showDetailModal"
+        title="Store Details"
+        @close="showDetailModal = false"
       >
-        <div class="modal-content card">
-          <h3>Store Details</h3>
+        <div v-if="selectedStore" class="store-details">
           <div class="detail-group">
             <label>Name:</label>
             <p>{{ selectedStore.name }}</p>
@@ -424,11 +281,13 @@ const handleDelete = async (id: number) => {
             <label>Updated:</label>
             <p>{{ new Date(selectedStore.updatedAt).toLocaleString() }}</p>
           </div>
-          <button class="btn btn-primary" @click="selectedStore = null">
+        </div>
+        <template #footer>
+          <button class="btn btn-primary" @click="showDetailModal = false">
             Close
           </button>
-        </div>
-      </div>
+        </template>
+      </ModalDialog>
     </div>
   </DashboardLayout>
 </template>
@@ -464,95 +323,6 @@ const handleDelete = async (id: number) => {
   gap: var(--space-2);
 }
 
-.stores-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.stores-table th,
-.stores-table td {
-  padding: var(--space-3);
-  text-align: left;
-  border-bottom: 1px solid var(--color-grey-200);
-}
-
-.stores-table th {
-  font-weight: 600;
-  color: var(--color-grey-700);
-  background-color: var(--color-grey-100);
-}
-
-.sort-button {
-  background: none;
-  border: none;
-  font-weight: 600;
-  color: var(--color-grey-700);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: var(--space-1);
-}
-
-.sort-button:hover {
-  color: var(--color-primary);
-}
-
-.sort-indicator {
-  color: var(--color-primary);
-}
-
-.actions {
-  display: flex;
-  gap: var(--space-2);
-}
-
-.btn-sm {
-  padding: var(--space-1) var(--space-2);
-  font-size: 0.875rem;
-}
-
-.btn-error {
-  background-color: var(--color-error);
-  color: white;
-}
-
-.btn-error:hover {
-  background-color: color-mix(in srgb, var(--color-error) 80%, black);
-}
-
-.pagination {
-  display: flex;
-  gap: var(--space-2);
-  justify-content: center;
-  margin-top: var(--space-4);
-}
-
-.modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
-
-.modal-content {
-  width: 100%;
-  max-width: 500px;
-  padding: var(--space-4);
-}
-
-.modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: var(--space-2);
-  margin-top: var(--space-4);
-}
-
 .detail-group {
   margin-bottom: var(--space-3);
 }
@@ -564,10 +334,8 @@ const handleDelete = async (id: number) => {
   display: block;
 }
 
-.loading {
-  text-align: center;
-  padding: var(--space-4);
-  color: var(--color-grey-600);
+.store-details {
+  padding: var(--space-2) 0;
 }
 
 @media (max-width: 768px) {
@@ -586,10 +354,6 @@ const handleDelete = async (id: number) => {
 
   .search-box input {
     flex: 1;
-  }
-
-  .actions {
-    flex-direction: column;
   }
 }
 </style>

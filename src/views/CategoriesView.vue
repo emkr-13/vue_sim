@@ -1,16 +1,49 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
-import { useCategoriesStore } from '@/stores/categories';
-import DashboardLayout from '@/layouts/DashboardLayout.vue';
-import type { Category } from '@/types';
+import { ref, onMounted } from "vue";
+import { useCategoriesStore } from "@/stores/categories";
+import DashboardLayout from "@/layouts/DashboardLayout.vue";
+import DataTable from "@/components/DataTable.vue";
+import ModalDialog from "@/components/ModalDialog.vue";
+import CategoryForm from "@/components/CategoryForm.vue";
+import Pagination from "@/components/Pagination.vue";
+import type {
+  Category,
+  CreateCategoryRequest,
+  UpdateCategoryRequest,
+} from "@/types";
 
 const categoriesStore = useCategoriesStore();
 const currentPage = ref(1);
 const itemsPerPage = ref<1 | 10 | 100 | 1000>(10);
-const searchQuery = ref('');
-const sortBy = ref<'name' | 'createdAt'>('createdAt');
-const sortOrder = ref<'asc' | 'desc'>('desc');
+const searchQuery = ref("");
+const sortBy = ref<"name" | "createdAt">("createdAt");
+const sortOrder = ref<"asc" | "desc">("desc");
 const selectedCategory = ref<Category | null>(null);
+const showDetailModal = ref(false);
+const showCreateModal = ref(false);
+const showEditModal = ref(false);
+
+const newCategory = ref<CreateCategoryRequest>({
+  name: "",
+  description: "",
+});
+
+const editCategory = ref<UpdateCategoryRequest>({
+  id: 0,
+  name: "",
+  description: "",
+});
+
+const tableColumns = [
+  { key: "name", label: "Name", sortable: true },
+  { key: "description", label: "Description" },
+  {
+    key: "createdAt",
+    label: "Created At",
+    sortable: true,
+    formatter: (value: string) => new Date(value).toLocaleDateString(),
+  },
+];
 
 onMounted(() => {
   loadCategories();
@@ -22,7 +55,7 @@ const loadCategories = async () => {
     limit: itemsPerPage.value,
     search: searchQuery.value || undefined,
     sortBy: sortBy.value,
-    sortOrder: sortOrder.value
+    sortOrder: sortOrder.value,
   });
 };
 
@@ -31,12 +64,12 @@ const handleSearch = async () => {
   await loadCategories();
 };
 
-const handleSort = async (field: 'name' | 'createdAt') => {
+const handleSort = async (field: string) => {
   if (sortBy.value === field) {
-    sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc';
+    sortOrder.value = sortOrder.value === "asc" ? "desc" : "asc";
   } else {
-    sortBy.value = field;
-    sortOrder.value = 'asc';
+    sortBy.value = field as "name" | "createdAt";
+    sortOrder.value = "asc";
   }
   await loadCategories();
 };
@@ -52,9 +85,59 @@ const handleLimitChange = async (limit: 1 | 10 | 100 | 1000) => {
   await loadCategories();
 };
 
-const viewCategoryDetail = async (id: number) => {
-  await categoriesStore.fetchCategoryDetail(id);
-  selectedCategory.value = categoriesStore.selectedCategory;
+const viewCategoryDetail = async (category: Category) => {
+  selectedCategory.value = category;
+  showDetailModal.value = true;
+};
+
+const openCreateModal = () => {
+  newCategory.value = {
+    name: "",
+    description: "",
+  };
+  showCreateModal.value = true;
+};
+
+const openEditModal = (category: Category) => {
+  editCategory.value = {
+    id: category.id,
+    name: category.name,
+    description: category.description,
+  };
+  showEditModal.value = true;
+};
+
+const handleCreate = async (data: CreateCategoryRequest) => {
+  try {
+    await categoriesStore.createCategory(data);
+    showCreateModal.value = false;
+    await loadCategories();
+  } catch (error) {
+    console.error("Failed to create category:", error);
+  }
+};
+
+const handleUpdate = async (
+  data: UpdateCategoryRequest | CreateCategoryRequest
+) => {
+  try {
+    await categoriesStore.updateCategory(data as UpdateCategoryRequest);
+    showEditModal.value = false;
+    await loadCategories();
+  } catch (error) {
+    console.error("Failed to update category:", error);
+  }
+};
+
+const handleDelete = async (category: Category) => {
+  if (confirm("Are you sure you want to delete this category?")) {
+    try {
+      await categoriesStore.deleteCategory(category.id);
+      await loadCategories();
+    } catch (error) {
+      console.error("Failed to delete category:", error);
+    }
+  }
 };
 </script>
 
@@ -63,7 +146,7 @@ const viewCategoryDetail = async (id: number) => {
     <div class="categories">
       <div class="page-header">
         <h2 class="page-title">Categories</h2>
-        
+
         <div class="filters">
           <div class="search-box">
             <input
@@ -73,84 +156,89 @@ const viewCategoryDetail = async (id: number) => {
               class="form-control"
               @keyup.enter="handleSearch"
             />
-            <button class="btn btn-primary" @click="handleSearch">Search</button>
+            <button class="btn btn-primary" @click="handleSearch">
+              Search
+            </button>
           </div>
-          
-          <select 
-            v-model="itemsPerPage" 
+
+          <select
+            v-model="itemsPerPage"
             class="form-control"
-            @change="handleLimitChange(Number(($event.target as HTMLSelectElement).value) as 1 | 10 | 100 | 1000)"
+            @change="
+              handleLimitChange(
+                Number(($event.target as HTMLSelectElement).value) as
+                  | 1
+                  | 10
+                  | 100
+                  | 1000
+              )
+            "
           >
             <option :value="1">1 per page</option>
             <option :value="10">10 per page</option>
             <option :value="100">100 per page</option>
             <option :value="1000">1000 per page</option>
           </select>
-        </div>
-      </div>
 
-      <div class="categories-list card" v-if="!categoriesStore.loading">
-        <table class="categories-table">
-          <thead>
-            <tr>
-              <th>
-                <button class="sort-button" @click="handleSort('name')">
-                  Name
-                  <span v-if="sortBy === 'name'" class="sort-indicator">
-                    {{ sortOrder === 'asc' ? '↑' : '↓' }}
-                  </span>
-                </button>
-              </th>
-              <th>Description</th>
-              <th>
-                <button class="sort-button" @click="handleSort('createdAt')">
-                  Created At
-                  <span v-if="sortBy === 'createdAt'" class="sort-indicator">
-                    {{ sortOrder === 'asc' ? '↑' : '↓' }}
-                  </span>
-                </button>
-              </th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="category in categoriesStore.categories" :key="category.id">
-              <td>{{ category.name }}</td>
-              <td>{{ category.description }}</td>
-              <td>{{ new Date(category.createdAt).toLocaleDateString() }}</td>
-              <td>
-                <button 
-                  class="btn btn-primary btn-sm"
-                  @click="viewCategoryDetail(category.id)"
-                >
-                  View Details
-                </button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-
-        <div class="pagination" v-if="categoriesStore.pagination">
-          <button 
-            v-for="page in categoriesStore.pagination.detail"
-            :key="page"
-            class="btn"
-            :class="{ 'btn-primary': page === categoriesStore.pagination.current }"
-            @click="handlePageChange(page)"
-          >
-            {{ page }}
+          <button class="btn btn-primary" @click="openCreateModal">
+            Add Category
           </button>
         </div>
       </div>
 
-      <div class="loading" v-else>
-        Loading categories...
+      <div class="categories-list card">
+        <DataTable
+          :columns="tableColumns"
+          :data="categoriesStore.categories"
+          :loading="categoriesStore.loading"
+          :sort-by="sortBy"
+          :sort-order="sortOrder"
+          @sort="handleSort"
+          @view="viewCategoryDetail"
+          @edit="openEditModal"
+          @delete="handleDelete"
+        />
+
+        <Pagination
+          v-if="categoriesStore.pagination"
+          :pagination="categoriesStore.pagination"
+          @page-change="handlePageChange"
+        />
       </div>
 
+      <!-- Create Category Modal -->
+      <ModalDialog
+        :show="showCreateModal"
+        title="Create New Category"
+        @close="showCreateModal = false"
+      >
+        <CategoryForm
+          @submit="handleCreate"
+          @cancel="showCreateModal = false"
+        />
+      </ModalDialog>
+
+      <!-- Edit Category Modal -->
+      <ModalDialog
+        :show="showEditModal"
+        title="Edit Category"
+        @close="showEditModal = false"
+      >
+        <CategoryForm
+          :category="editCategory"
+          :is-edit="true"
+          @submit="handleUpdate"
+          @cancel="showEditModal = false"
+        />
+      </ModalDialog>
+
       <!-- Category Detail Modal -->
-      <div class="modal" v-if="selectedCategory" @click.self="selectedCategory = null">
-        <div class="modal-content card">
-          <h3>Category Details</h3>
+      <ModalDialog
+        :show="showDetailModal"
+        title="Category Details"
+        @close="showDetailModal = false"
+      >
+        <div v-if="selectedCategory" class="category-details">
           <div class="detail-group">
             <label>Name:</label>
             <p>{{ selectedCategory.name }}</p>
@@ -167,9 +255,13 @@ const viewCategoryDetail = async (id: number) => {
             <label>Updated:</label>
             <p>{{ new Date(selectedCategory.updatedAt).toLocaleString() }}</p>
           </div>
-          <button class="btn btn-primary" @click="selectedCategory = null">Close</button>
         </div>
-      </div>
+        <template #footer>
+          <button class="btn btn-primary" @click="showDetailModal = false">
+            Close
+          </button>
+        </template>
+      </ModalDialog>
     </div>
   </DashboardLayout>
 </template>
@@ -205,74 +297,6 @@ const viewCategoryDetail = async (id: number) => {
   gap: var(--space-2);
 }
 
-.categories-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.categories-table th,
-.categories-table td {
-  padding: var(--space-3);
-  text-align: left;
-  border-bottom: 1px solid var(--color-grey-200);
-}
-
-.categories-table th {
-  font-weight: 600;
-  color: var(--color-grey-700);
-  background-color: var(--color-grey-100);
-}
-
-.sort-button {
-  background: none;
-  border: none;
-  font-weight: 600;
-  color: var(--color-grey-700);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: var(--space-1);
-}
-
-.sort-button:hover {
-  color: var(--color-primary);
-}
-
-.sort-indicator {
-  color: var(--color-primary);
-}
-
-.btn-sm {
-  padding: var(--space-1) var(--space-2);
-  font-size: 0.875rem;
-}
-
-.pagination {
-  display: flex;
-  gap: var(--space-2);
-  justify-content: center;
-  margin-top: var(--space-4);
-}
-
-.modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
-
-.modal-content {
-  width: 100%;
-  max-width: 500px;
-  padding: var(--space-4);
-}
-
 .detail-group {
   margin-bottom: var(--space-3);
 }
@@ -284,10 +308,8 @@ const viewCategoryDetail = async (id: number) => {
   display: block;
 }
 
-.loading {
-  text-align: center;
-  padding: var(--space-4);
-  color: var(--color-grey-600);
+.category-details {
+  padding: var(--space-2) 0;
 }
 
 @media (max-width: 768px) {
@@ -295,15 +317,15 @@ const viewCategoryDetail = async (id: number) => {
     flex-direction: column;
     align-items: stretch;
   }
-  
+
   .filters {
     flex-direction: column;
   }
-  
+
   .search-box {
     width: 100%;
   }
-  
+
   .search-box input {
     flex: 1;
   }
