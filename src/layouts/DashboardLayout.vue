@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-import { useAuthStore } from '@/stores/auth';
-import Sidebar from '@/components/dashboard/Sidebar.vue';
-import Header from '@/components/dashboard/Header.vue';
+import { ref } from "vue";
+import { useAuthStore } from "@/stores/auth";
+import Sidebar from "@/components/dashboard/Sidebar.vue";
+import Header from "@/components/dashboard/Header.vue";
 
 const sidebarCollapsed = ref(false);
 const authStore = useAuthStore();
@@ -17,16 +17,19 @@ const logout = () => {
 </script>
 
 <template>
-  <div class="dashboard-layout" :class="{ 'sidebar-collapsed': sidebarCollapsed }">
+  <div
+    class="dashboard-layout"
+    :class="{ 'sidebar-collapsed': sidebarCollapsed }"
+  >
     <Sidebar :collapsed="sidebarCollapsed" />
-    
+
     <div class="dashboard-content">
-      <Header 
-        :toggleSidebar="toggleSidebar" 
+      <Header
+        :toggleSidebar="toggleSidebar"
         :sidebarCollapsed="sidebarCollapsed"
         :logout="logout"
       />
-      
+
       <main class="main-content">
         <slot />
       </main>
@@ -39,6 +42,8 @@ const logout = () => {
   display: flex;
   height: 100vh;
   overflow: hidden;
+  background-color: var(--body-bg);
+  color: var(--text-color);
 }
 
 .dashboard-content {
@@ -58,14 +63,14 @@ const logout = () => {
   flex: 1;
   padding: var(--space-4);
   overflow-y: auto;
-  background-color: var(--color-grey-100);
+  background-color: var(--body-bg);
 }
 
 @media (max-width: 768px) {
   .dashboard-content {
     margin-left: 0;
   }
-  
+
   .sidebar-collapsed .dashboard-content {
     margin-left: 0;
   }

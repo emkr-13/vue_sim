@@ -2,6 +2,7 @@
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
+import { useThemeStore } from "@/stores/theme";
 import ProfileModal from "@/components/profile/ProfileModal.vue";
 
 defineProps({
@@ -13,6 +14,7 @@ defineProps({
 
 const router = useRouter();
 const authStore = useAuthStore();
+const themeStore = useThemeStore();
 const user = authStore.user;
 const showProfileModal = ref(false);
 
@@ -102,6 +104,10 @@ const handleLogout = () => {
 const toggleProfileModal = () => {
   showProfileModal.value = !showProfileModal.value;
 };
+
+const toggleTheme = () => {
+  themeStore.toggleTheme();
+};
 </script>
 
 <template>
@@ -161,6 +167,13 @@ const toggleProfileModal = () => {
       </ul>
     </nav>
 
+    <div class="theme-toggle" @click="toggleTheme">
+      <span class="menu-icon">{{ themeStore.isDarkMode ? "🌙" : "☀️" }}</span>
+      <span class="menu-text" v-if="!collapsed">{{
+        themeStore.isDarkMode ? "Dark Mode" : "Light Mode"
+      }}</span>
+    </div>
+
     <div class="sidebar-profile">
       <div class="profile-container" @click="toggleProfileModal">
         <div class="profile-avatar">
@@ -185,8 +198,8 @@ const toggleProfileModal = () => {
 .sidebar {
   width: var(--sidebar-width);
   height: 100vh;
-  background-color: #1e293b; /* Dark blue background */
-  color: #e2e8f0; /* Light text */
+  background-color: var(--sidebar-bg);
+  color: var(--sidebar-text);
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
   display: flex;
   flex-direction: column;
@@ -204,16 +217,16 @@ const toggleProfileModal = () => {
 
 .sidebar-header {
   padding: var(--space-4);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid var(--sidebar-border);
   display: flex;
   align-items: center;
   justify-content: flex-start;
   height: 72px;
-  background-color: #0f172a; /* Darker blue for header */
+  background-color: var(--sidebar-header-bg);
 }
 
 .sidebar-logo {
-  color: #38bdf8; /* Light blue for logo */
+  color: var(--sidebar-active);
   font-size: 1.5rem;
   font-weight: 700;
   margin: 0;
@@ -226,7 +239,7 @@ const toggleProfileModal = () => {
   justify-content: center;
   width: 40px;
   height: 40px;
-  background-color: #38bdf8; /* Light blue */
+  background-color: var(--sidebar-active);
   color: white;
   border-radius: 50%;
   font-weight: 700;
@@ -259,14 +272,14 @@ const toggleProfileModal = () => {
 }
 
 .sidebar-menu-item:hover > .menu-item-content {
-  background-color: rgba(255, 255, 255, 0.05);
+  background-color: var(--sidebar-hover-bg);
 }
 
 .sidebar-menu-item.active > .menu-item-content {
-  background-color: rgba(56, 189, 248, 0.1); /* Light blue with opacity */
-  color: #38bdf8; /* Light blue */
+  background-color: var(--sidebar-active-bg);
+  color: var(--sidebar-active);
   font-weight: 500;
-  border-left: 3px solid #38bdf8;
+  border-left: 3px solid var(--sidebar-active);
 }
 
 .menu-icon {
@@ -313,7 +326,7 @@ const toggleProfileModal = () => {
   position: absolute;
   left: 100%;
   top: 0;
-  background-color: #1e293b;
+  background-color: var(--sidebar-bg);
   box-shadow: 5px 0 10px rgba(0, 0, 0, 0.1);
   min-width: 200px;
   max-height: none;
@@ -338,19 +351,32 @@ const toggleProfileModal = () => {
 }
 
 .submenu-item:hover {
-  background-color: rgba(255, 255, 255, 0.05);
+  background-color: var(--sidebar-hover-bg);
 }
 
 .submenu-item.active {
-  background-color: rgba(56, 189, 248, 0.1);
-  color: #38bdf8;
+  background-color: var(--sidebar-active-bg);
+  color: var(--sidebar-active);
   font-weight: 500;
+}
+
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  padding: var(--space-3) var(--space-4);
+  cursor: pointer;
+  border-top: 1px solid var(--sidebar-border);
+  transition: background-color var(--transition-speed) ease;
+}
+
+.theme-toggle:hover {
+  background-color: var(--sidebar-hover-bg);
 }
 
 .sidebar-profile {
   padding: var(--space-4);
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  background-color: #0f172a; /* Darker blue for footer */
+  border-top: 1px solid var(--sidebar-border);
+  background-color: var(--sidebar-header-bg);
 }
 
 .profile-container {
@@ -359,19 +385,19 @@ const toggleProfileModal = () => {
   margin-bottom: var(--space-3);
   cursor: pointer;
   padding: var(--space-2);
-  border-radius: var(--border-radius);
+  border-radius: var(--border-radius-md);
   transition: background-color var(--transition-speed) ease;
 }
 
 .profile-container:hover {
-  background-color: rgba(255, 255, 255, 0.05);
+  background-color: var(--sidebar-hover-bg);
 }
 
 .profile-avatar {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background-color: #38bdf8;
+  background-color: var(--sidebar-active);
   color: white;
   display: flex;
   align-items: center;
@@ -400,7 +426,7 @@ const toggleProfileModal = () => {
 .profile-email {
   margin: 0;
   font-size: 0.8rem;
-  color: #94a3b8; /* Lighter gray */
+  color: var(--color-grey-500);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -413,14 +439,14 @@ const toggleProfileModal = () => {
   padding: var(--space-2);
   background-color: transparent;
   border: none;
-  color: #e2e8f0;
+  color: var(--sidebar-text);
   cursor: pointer;
-  border-radius: var(--border-radius);
+  border-radius: var(--border-radius-md);
   transition: background-color var(--transition-speed) ease;
 }
 
 .logout-button:hover {
-  background-color: rgba(255, 255, 255, 0.05);
+  background-color: var(--sidebar-hover-bg);
 }
 
 @media (max-width: 768px) {

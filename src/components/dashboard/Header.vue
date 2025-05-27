@@ -45,11 +45,12 @@ const user = authStore.user;
 .header {
   height: 72px;
   padding: 0 var(--space-4);
-  background-color: white;
-  border-bottom: 1px solid var(--color-grey-200);
+  background-color: var(--card-bg);
+  border-bottom: 1px solid var(--sidebar-border);
   display: flex;
   align-items: center;
   justify-content: space-between;
+  color: var(--text-color);
 }
 
 .header-start {
@@ -69,10 +70,11 @@ const user = authStore.user;
   border-radius: var(--border-radius-md);
   transition: background-color var(--transition-speed) ease;
   margin-right: var(--space-3);
+  color: var(--text-color);
 }
 
 .menu-toggle:hover {
-  background-color: var(--color-grey-200);
+  background-color: var(--sidebar-hover-bg);
 }
 
 .menu-icon {
@@ -82,7 +84,7 @@ const user = authStore.user;
 .header-title {
   font-size: 1.25rem;
   font-weight: 600;
-  color: var(--color-grey-800);
+  color: var(--text-color);
   text-transform: capitalize;
 }
 
@@ -107,12 +109,14 @@ const user = authStore.user;
   position: absolute;
   top: 100%;
   right: 0;
-  background-color: white;
+  background-color: var(--card-bg);
   border-radius: var(--border-radius-md);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--card-shadow);
   padding: var(--space-2);
   min-width: 150px;
   display: none;
+  z-index: 100;
+  color: var(--text-color);
 }
 
 .user-profile:hover .user-menu {
@@ -128,9 +132,10 @@ const user = authStore.user;
   width: 100%;
   border-radius: var(--border-radius-sm);
   transition: background-color var(--transition-speed) ease;
+  color: var(--text-color);
 }
 
 .btn-logout:hover {
-  background-color: var(--color-grey-200);
+  background-color: var(--sidebar-hover-bg);
 }
 </style>

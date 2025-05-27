@@ -1,4 +1,4 @@
-# Vue Login - Aplikasi Management
+# Vue SIM
 
 Aplikasi Vue 3 dengan TypeScript untuk manajemen toko dan produk.
 
