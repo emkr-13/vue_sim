@@ -156,7 +156,7 @@ export interface ProductsResponse {
   success: boolean;
   message: string;
   data: {
-    products: Product[];
+    data: Product[];
     pagination: Pagination;
   };
 }
