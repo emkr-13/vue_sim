@@ -1,4 +1,4 @@
-# Vue Auth Dashboard
+# Vue Inventory Management System
 
 A Vue 3 TypeScript application for authentication and dashboard management.
 
@@ -26,8 +26,8 @@ src/
 1. Clone this repository
 
 ```bash
-git clone https://github.com/yourusername/vue-auth-dashboard.git
-cd vue-auth-dashboard
+git clone https://github.com/emkr-13/vue_sim.git
+cd vue-sim
 ```
 
 2. Install dependencies
