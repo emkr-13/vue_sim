@@ -4,7 +4,7 @@ import type {
   AccountDetailResponse,
   CreateAccountRequest,
   UpdateAccountRequest,
-} from "@/types";
+} from "@/types/account.types";
 
 interface GetAccountsParams {
   search?: string;

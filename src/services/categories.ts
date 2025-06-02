@@ -4,7 +4,7 @@ import type {
   CategoryDetailResponse, 
   CreateCategoryRequest,
   UpdateCategoryRequest 
-} from '@/types';
+} from '@/types/category.types';
 
 interface GetCategoriesParams {
   search?: string;

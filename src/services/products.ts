@@ -4,7 +4,8 @@ import type {
   ProductDetailResponse,
   CreateProductRequest,
   UpdateProductRequest,
-} from "@/types";
+  titleForProducts,
+} from "@/types/product.types";
 
 interface GetProductsParams {
   search?: string;
@@ -62,5 +63,19 @@ export const productsService = {
 
   delete: async (id: string): Promise<void> => {
     await api.post("/products/delete", { id });
+  },
+
+  exportToExcel: async (data: titleForProducts): Promise<Blob> => {
+    const response = await api.post("/products/export/excel", data, {
+      responseType: "blob",
+    });
+    return response.data;
+  },
+
+  exportToPdf: async (data: titleForProducts): Promise<Blob> => {
+    const response = await api.post("/products/export/pdf", data, {
+      responseType: "blob",
+    });
+    return response.data;
   },
 };

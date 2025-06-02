@@ -4,7 +4,7 @@ import type {
   StoreDetailResponse,
   CreateStoreRequest,
   UpdateStoreRequest,
-} from "@/types";
+} from "@/types/store.types";
 
 interface GetStoresParams {
   search?: string;

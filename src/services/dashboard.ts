@@ -2,7 +2,7 @@ import api from "./api";
 import type {
   DashboardGeneralResponse,
   DashboardSpecificResponse,
-} from "@/types";
+} from "@/types/dashboard.types";
 
 type TimeFilter =
   | "today"

@@ -3,7 +3,7 @@ import type {
   StockMovementDetailResponse,
   CreateStockMovementRequest,
   UpdateStockMovementRequest,
-} from '@/types';
+} from '@/types/transaction.types';
 import api from './api';
 
 export const stockMovementsService = {

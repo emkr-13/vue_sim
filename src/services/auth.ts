@@ -3,7 +3,7 @@ import type {
   LoginCredentials,
   LoginResponse,
   UserProfileResponse,
-} from "@/types";
+} from "@/types/auth.types";
 
 export interface RefreshTokenRequest {
   refreshToken: string;

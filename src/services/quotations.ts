@@ -3,7 +3,7 @@ import type {
   QuotationDetailResponse,
   CreateQuotationRequest,
   UpdateQuotationRequest,
-} from '@/types';
+} from '@/types/transaction.types';
 import api from './api';
 
 export const quotationsService = {

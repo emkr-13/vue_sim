@@ -3,7 +3,7 @@ import type {
   PurchaseDetailResponse,
   CreatePurchaseRequest,
   UpdatePurchaseRequest,
-} from '@/types';
+} from '@/types/transaction.types';
 import api from './api';
 
 export const purchasesService = {

@@ -4,7 +4,7 @@ import type {
   SalesReportResponse,
   PurchaseReportResponse,
   InventoryReportResponse
-} from '@/types';
+} from '@/types/report.types';
 
 export const getSalesReport = async (filter: ReportFilter, page = 1, limit = 10): Promise<SalesReportResponse> => {
   const response = await api.get('/reports/sales', {
