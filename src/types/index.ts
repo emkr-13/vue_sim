@@ -51,10 +51,10 @@ export interface Store {
 export interface Account {
   id: number;
   name: string;
-  phone: string;
-  email: string;
-  address: string;
   type: "supplier" | "customer";
+  email: string;
+  phone: string;
+  address: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -206,8 +206,8 @@ export interface UpdateStoreRequest extends CreateStoreRequest {
 export interface CreateAccountRequest {
   name: string;
   type: "supplier" | "customer";
-  phone: string;
   email: string;
+  phone: string;
   address: string;
 }
 
