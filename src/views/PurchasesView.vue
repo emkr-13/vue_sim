@@ -1,23 +1,23 @@
-import DashboardLayout from "@/layouts/DashboardLayout.vue";
 <script setup lang="ts">
+import DashboardLayout from "@/layouts/DashboardLayout.vue";
 // No imports needed for now
 </script>
 
 <template>
-<DashboardLayout>
-  <div class="purchases-view">
-    <div class="page-header">
-      <h1>Purchases</h1>
-      <p>Manage your purchase orders</p>
-    </div>
+  <DashboardLayout>
+    <div class="purchases-view">
+      <div class="page-header">
+        <h1>Purchases</h1>
+        <p>Manage your purchase orders</p>
+      </div>
 
-    <div class="content-placeholder">
-      <div class="placeholder-icon">🛒</div>
-      <h2>Purchases Management</h2>
-      <p>This page will display and manage all your purchase orders.</p>
+      <div class="content-placeholder">
+        <div class="placeholder-icon">🛒</div>
+        <h2>Purchases Management</h2>
+        <p>This page will display and manage all your purchase orders.</p>
+      </div>
     </div>
-  </div>
-</DashboardLayout>
+  </DashboardLayout>
 </template>
 
 <style scoped>

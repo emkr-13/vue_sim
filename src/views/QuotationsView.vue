@@ -1,10 +1,11 @@
 import DashboardLayout from "@/layouts/DashboardLayout.vue";
 <script setup lang="ts">
+import DashboardLayout from "@/layouts/DashboardLayout.vue";
 // No imports needed for now
 </script>
 
 <template>
-
+  <DashboardLayout>
     <div class="quotations-view">
       <div class="page-header">
         <h1>Quotations</h1>
@@ -20,7 +21,7 @@ import DashboardLayout from "@/layouts/DashboardLayout.vue";
         </p>
       </div>
     </div>
-  
+  </DashboardLayout>
 </template>
 
 <style scoped>

@@ -1,26 +1,26 @@
-import DashboardLayout from "@/layouts/DashboardLayout.vue";
 <script setup lang="ts">
+import DashboardLayout from "@/layouts/DashboardLayout.vue";
 // No imports needed for now
 </script>
 
 <template>
-<DashboardLayout>
-  <div class="reports-view">
-    <div class="page-header">
-      <h1>Reports</h1>
-      <p>View and generate business reports</p>
-    </div>
+  <DashboardLayout>
+    <div class="reports-view">
+      <div class="page-header">
+        <h1>Reports</h1>
+        <p>View and generate business reports</p>
+      </div>
 
-    <div class="content-placeholder">
-      <div class="placeholder-icon">📈</div>
-      <h2>Reports</h2>
-      <p>
-        This page will display and generate various business reports and
-        analytics.
-      </p>
+      <div class="content-placeholder">
+        <div class="placeholder-icon">📈</div>
+        <h2>Reports</h2>
+        <p>
+          This page will display and generate various business reports and
+          analytics.
+        </p>
+      </div>
     </div>
-  </div>
-   </DashboardLayout>
+  </DashboardLayout>
 </template>
 
 <style scoped>
