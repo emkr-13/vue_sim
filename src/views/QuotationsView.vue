@@ -1,23 +1,26 @@
+import DashboardLayout from "@/layouts/DashboardLayout.vue";
 <script setup lang="ts">
 // No imports needed for now
 </script>
 
 <template>
-  <div class="quotations-view">
-    <div class="page-header">
-      <h1>Quotations</h1>
-      <p>Manage your quotations and price estimates</p>
-    </div>
 
-    <div class="content-placeholder">
-      <div class="placeholder-icon">📋</div>
-      <h2>Quotations Management</h2>
-      <p>
-        This page will display and manage all your quotations and price
-        estimates.
-      </p>
+    <div class="quotations-view">
+      <div class="page-header">
+        <h1>Quotations</h1>
+        <p>Manage your quotations and price estimates</p>
+      </div>
+
+      <div class="content-placeholder">
+        <div class="placeholder-icon">📋</div>
+        <h2>Quotations Management</h2>
+        <p>
+          This page will display and manage all your quotations and price
+          estimates.
+        </p>
+      </div>
     </div>
-  </div>
+  
 </template>
 
 <style scoped>

@@ -1,8 +1,10 @@
+import DashboardLayout from "@/layouts/DashboardLayout.vue";
 <script setup lang="ts">
 // No imports needed for now
 </script>
 
 <template>
+<DashboardLayout>
   <div class="reports-view">
     <div class="page-header">
       <h1>Reports</h1>
@@ -18,6 +20,7 @@
       </p>
     </div>
   </div>
+   </DashboardLayout>
 </template>
 
 <style scoped>

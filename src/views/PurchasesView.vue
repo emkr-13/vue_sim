@@ -1,8 +1,10 @@
+import DashboardLayout from "@/layouts/DashboardLayout.vue";
 <script setup lang="ts">
 // No imports needed for now
 </script>
 
 <template>
+<DashboardLayout>
   <div class="purchases-view">
     <div class="page-header">
       <h1>Purchases</h1>
@@ -15,6 +17,7 @@
       <p>This page will display and manage all your purchase orders.</p>
     </div>
   </div>
+</DashboardLayout>
 </template>
 
 <style scoped>

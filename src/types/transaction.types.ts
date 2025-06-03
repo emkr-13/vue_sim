@@ -54,28 +54,22 @@ export interface PurchaseItem {
 }
 
 export interface StockMovement {
-  id: string;
-  movementNumber: string;
-  date: string;
-  type: "in" | "out" | "transfer";
-  sourceStoreId?: string;
-  sourceStoreName?: string;
-  destinationStoreId?: string;
-  destinationStoreName?: string;
-  status: "draft" | "pending" | "completed" | "cancelled";
+  id: number;
+  productId: number;
+  productName: string;
+  quantity: number;
+  productSku: string;
+  productSatuan: string;
+  movementType: "in" | "out";
+  akunId: number;
+  akunName: string;
+  storeId: number;
+  storeName: string;
   notes: string;
-  items: StockMovementItem[];
   createdAt: string;
   updatedAt: string;
 }
 
-export interface StockMovementItem {
-  id: string;
-  productId: string;
-  productName: string;
-  quantity: number;
-  reason?: string;
-}
 
 export interface QuotationsResponse {
   success: boolean;
@@ -154,20 +148,3 @@ export interface UpdatePurchaseRequest extends CreatePurchaseRequest {
   status?: "draft" | "ordered" | "received" | "cancelled";
 }
 
-export interface CreateStockMovementRequest {
-  type: "in" | "out" | "transfer";
-  date: string;
-  sourceStoreId?: string;
-  destinationStoreId?: string;
-  notes?: string;
-  items: Array<{
-    productId: string;
-    quantity: number;
-    reason?: string;
-  }>;
-}
-
-export interface UpdateStockMovementRequest extends CreateStockMovementRequest {
-  id: string;
-  status?: "draft" | "pending" | "completed" | "cancelled";
-} 

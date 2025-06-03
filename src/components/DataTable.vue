@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { Pagination } from '@/types';
+
 interface Column {
   key: string;
   label: string;
@@ -6,21 +8,21 @@ interface Column {
   formatter?: (value: any) => string;
 }
 
-interface Props {
+const props = defineProps<{
   columns: Column[];
   data: any[];
   loading?: boolean;
   sortBy?: string;
-  sortOrder?: "asc" | "desc";
-}
-
-const props = defineProps<Props>();
+  sortOrder?: 'asc' | 'desc';
+  pagination?: Pagination | null;
+}>();
 
 const emit = defineEmits<{
-  (e: "sort", key: string): void;
-  (e: "view", item: any): void;
-  (e: "edit", item: any): void;
-  (e: "delete", item: any): void;
+  (e: 'sort', column: string): void;
+  (e: 'page-change', page: number): void;
+  (e: 'view', item: any): void;
+  (e: 'edit', item: any): void;
+  (e: 'delete', item: any): void;
 }>();
 
 const formatValue = (item: any, column: Column) => {
@@ -34,15 +36,17 @@ const formatValue = (item: any, column: Column) => {
   return value;
 };
 
-const getSortIndicator = (column: Column) => {
-  if (!column.sortable || props.sortBy !== column.key) return "";
-  return props.sortOrder === "asc" ? "↑" : "↓";
+const getSortIcon = (column: string) => {
+  if (props.sortBy !== column) return '↕';
+  return props.sortOrder === 'asc' ? '↑' : '↓';
 };
 
-const handleSort = (column: Column) => {
-  if (column.sortable) {
-    emit("sort", column.key);
-  }
+const handleSort = (column: string) => {
+  emit('sort', column);
+};
+
+const handlePageChange = (page: number) => {
+  emit('page-change', page);
 };
 </script>
 
@@ -52,52 +56,77 @@ const handleSort = (column: Column) => {
     <table v-else class="data-table">
       <thead>
         <tr>
-          <th v-for="column in columns" :key="column.key">
-            <button
-              v-if="column.sortable"
-              class="sort-button"
-              @click="handleSort(column)"
-            >
-              {{ column.label }}
-              <span v-if="sortBy === column.key" class="sort-indicator">
-                {{ getSortIndicator(column) }}
-              </span>
-            </button>
-            <span v-else>{{ column.label }}</span>
+          <th v-for="column in columns" :key="column.key" @click="handleSort(column.key)" :class="{ sortable: true, active: sortBy === column.key }">
+            {{ column.label }}
+            <span class="sort-icon">{{ getSortIcon(column.key) }}</span>
           </th>
           <th class="actions-column">Actions</th>
         </tr>
       </thead>
       <tbody>
-        <tr v-for="(item, index) in data" :key="index">
-          <td v-for="column in columns" :key="column.key">
-            {{ formatValue(item, column) }}
-          </td>
-          <td>
-            <div class="actions">
-              <button
-                class="btn btn-primary btn-sm"
-                @click="emit('view', item)"
-              >
-                View
-              </button>
-              <button
-                class="btn btn-outline btn-sm"
-                @click="emit('edit', item)"
-              >
-                Edit
-              </button>
-              <button
-                class="btn btn-error btn-sm"
-                @click="emit('delete', item)"
-              >
-                Delete
-              </button>
-            </div>
-          </td>
-        </tr>
+        <template v-if="loading">
+          <tr>
+            <td :colspan="columns.length" class="loading">Loading...</td>
+          </tr>
+        </template>
+        <template v-else-if="data.length === 0">
+          <tr>
+            <td :colspan="columns.length" class="no-data">No data available</td>
+          </tr>
+        </template>
+        <template v-else>
+          <tr v-for="(item, index) in data" :key="index">
+            <td v-for="column in columns" :key="column.key">
+              <slot :name="'cell-' + column.key" :item="item">
+                {{ formatValue(item, column) }}
+              </slot>
+            </td>
+            <td>
+              <div class="actions">
+                <button
+                  class="btn btn-primary btn-sm"
+                  @click="emit('view', item)"
+                >
+                  View
+                </button>
+                <button
+                  class="btn btn-outline btn-sm"
+                  @click="emit('edit', item)"
+                >
+                  Edit
+                </button>
+                <button
+                  class="btn btn-error btn-sm"
+                  @click="emit('delete', item)"
+                >
+                  Delete
+                </button>
+              </div>
+            </td>
+          </tr>
+        </template>
       </tbody>
     </table>
+
+    <div v-if="pagination" class="pagination">
+      <button
+        :disabled="pagination.currentPage === 1"
+        @click="handlePageChange(pagination.currentPage - 1)"
+        class="pagination-button"
+      >
+        Previous
+      </button>
+      <span class="pagination-info">
+        Page {{ pagination.currentPage }} of {{ pagination.lastPage }}
+      </span>
+      <button
+        :disabled="pagination.currentPage === pagination.lastPage"
+        @click="handlePageChange(pagination.currentPage + 1)"
+        class="pagination-button"
+      >
+        Next
+      </button>
+    </div>
   </div>
 </template>
 
@@ -125,22 +154,25 @@ const handleSort = (column: Column) => {
   background-color: var(--color-grey-100);
 }
 
-.sort-button {
-  background: none;
-  border: none;
-  font-weight: 600;
-  color: var(--color-grey-700);
+.data-table th.sortable {
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: var(--space-1);
+  user-select: none;
 }
 
-.sort-button:hover {
+.data-table th.sortable:hover {
+  background-color: var(--color-grey-100);
+}
+
+.data-table th.active {
   color: var(--color-primary);
 }
 
-.sort-indicator {
+.sort-icon {
+  margin-left: 0.5rem;
+  color: var(--color-grey-400);
+}
+
+th.active .sort-icon {
   color: var(--color-primary);
 }
 
@@ -158,9 +190,43 @@ const handleSort = (column: Column) => {
   font-size: 0.875rem;
 }
 
-.loading {
+.loading,
+.no-data {
   text-align: center;
   padding: var(--space-4);
+  color: var(--color-grey-600);
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 1rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.pagination-button {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius);
+  background: white;
+  color: var(--color-grey-700);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.pagination-button:hover:not(:disabled) {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.pagination-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pagination-info {
   color: var(--color-grey-600);
 }
 
