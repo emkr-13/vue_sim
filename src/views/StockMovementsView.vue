@@ -8,11 +8,11 @@ const store = useStockMovementsStore();
 const { showToast } = useToast();
 
 const search = ref('');
-const movementType = ref('');
-const sortBy = ref('date');
-const sortOrder = ref('desc');
+const movementType = ref<'in' | 'out' | ''>('');
+const sortBy = ref<'name' | 'movementType' | 'productName' | 'quantity' | 'createdAt'>('createdAt');
+const sortOrder = ref<'desc' | 'asc'>('desc');
 const currentPage = ref(1);
-const itemsPerPage = ref(10);
+const itemsPerPage = ref<10 | 100 | 1000>(10);
 
 const handleSearch = (event: Event) => {
   const value = (event.target as HTMLInputElement).value;
@@ -22,11 +22,11 @@ const handleSearch = (event: Event) => {
 
 const handleMovementTypeChange = (event: Event) => {
   const value = (event.target as HTMLSelectElement).value;
-  movementType.value = value;
+  movementType.value = value as 'in' | 'out' | '';
   fetchData();
 };
 
-const handleSort = (column: string) => {
+const handleSort = (column: 'name' | 'movementType' | 'productName' | 'quantity' | 'createdAt') => {
   if (sortBy.value === column) {
     sortOrder.value = sortOrder.value === 'asc' ? 'desc' : 'asc';
   } else {
@@ -103,17 +103,15 @@ onMounted(() => {
                 Quantity
                 <span class="sort-icon">↕</span>
               </th>
-              <th @click="handleSort('productSku')">
+              <th>
                 SKU
-                <span class="sort-icon">↕</span>
               </th>
               <th @click="handleSort('movementType')">
                 Type
                 <span class="sort-icon">↕</span>
               </th>
-              <th @click="handleSort('storeName')">
+              <th>
                 Store
-                <span class="sort-icon">↕</span>
               </th>
               <th @click="handleSort('createdAt')">
                 Date
