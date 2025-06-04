@@ -24,12 +24,6 @@ watch(searchQuery, (newValue) => {
 const handleSearch = () => {
   emit('search', searchQuery.value);
 };
-
-const handleKeyPress = (e: KeyboardEvent) => {
-  if (e.key === 'Enter') {
-    handleSearch();
-  }
-};
 </script>
 
 <template>

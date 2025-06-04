@@ -4,7 +4,7 @@ interface Option {
   label: string;
 }
 
-const props = defineProps<{
+const { modelValue, options, placeholder } = defineProps<{
   modelValue: string;
   options: Option[];
   placeholder?: string;

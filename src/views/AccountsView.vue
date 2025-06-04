@@ -110,23 +110,18 @@ const openEditModal = (account: Account) => {
   showEditModal.value = true;
 };
 
-const handleCreate = async (data: CreateAccountRequest) => {
+const handleSubmit = async (data: CreateAccountRequest | UpdateAccountRequest) => {
   try {
-    await accountsStore.createAccount(data);
-    showCreateModal.value = false;
+    if ('id' in data) {
+      await accountsStore.updateAccount(data as UpdateAccountRequest);
+      showEditModal.value = false;
+    } else {
+      await accountsStore.createAccount(data as CreateAccountRequest);
+      showCreateModal.value = false;
+    }
     await loadAccounts();
   } catch (error) {
-    console.error("Failed to create account:", error);
-  }
-};
-
-const handleUpdate = async (data: UpdateAccountRequest) => {
-  try {
-    await accountsStore.updateAccount(data);
-    showEditModal.value = false;
-    await loadAccounts();
-  } catch (error) {
-    console.error("Failed to update account:", error);
+    console.error("Failed to submit account:", error);
   }
 };
 
@@ -169,7 +164,7 @@ const handleDelete = async (account: Account) => {
             <select
               v-model="accountType"
               class="type-filter"
-              @change="handleTypeChange($event.target.value)"
+              @change="handleTypeChange((($event.target as HTMLSelectElement).value) as 'supplier' | 'customer' | '')"
             >
               <option value="">All Types</option>
               <option value="customer">Customers</option>
@@ -184,7 +179,7 @@ const handleDelete = async (account: Account) => {
               class="items-per-page"
               @change="
                 handleLimitChange(
-                  Number(($event.target as HTMLSelectElement).value) as
+                  Number(($event.target as HTMLSelectElement)?.value || 10) as
                     | 1
                     | 10
                     | 100
@@ -288,8 +283,9 @@ const handleDelete = async (account: Account) => {
       @close="showCreateModal = false"
     >
       <AccountForm
+        v-if="showCreateModal"
         :initial-data="newAccount"
-        @submit="handleCreate"
+        @submit="handleSubmit"
         @cancel="showCreateModal = false"
       />
     </ModalDialog>
@@ -301,9 +297,10 @@ const handleDelete = async (account: Account) => {
       @close="showEditModal = false"
     >
       <AccountForm
+        v-if="showEditModal"
         :initial-data="editAccount"
         :is-edit="true"
-        @submit="handleUpdate"
+        @submit="handleSubmit"
         @cancel="showEditModal = false"
       />
     </ModalDialog>

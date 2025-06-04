@@ -110,18 +110,18 @@ const handlePageChange = (page: number) => {
 
     <div v-if="pagination" class="pagination">
       <button
-        :disabled="pagination.currentPage === 1"
-        @click="handlePageChange(pagination.currentPage - 1)"
+        :disabled="pagination.current === 1"
+        @click="handlePageChange(pagination.current - 1)"
         class="pagination-button"
       >
         Previous
       </button>
       <span class="pagination-info">
-        Page {{ pagination.currentPage }} of {{ pagination.lastPage }}
+        Page {{ pagination.current }} of {{ pagination.total_page }}
       </span>
       <button
-        :disabled="pagination.currentPage === pagination.lastPage"
-        @click="handlePageChange(pagination.currentPage + 1)"
+        :disabled="pagination.current === pagination.total_page"
+        @click="handlePageChange(pagination.current + 1)"
         class="pagination-button"
       >
         Next
